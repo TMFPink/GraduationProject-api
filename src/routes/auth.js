@@ -7,7 +7,7 @@ const { asyncHandler } = require('../helpers/helpers');
 router.post('/signup', asyncHandler( AuthContoller.signUp ));
 router.post('/login', asyncHandler( AuthContoller.logIn ));
 router.get('/logout', asyncHandler( AuthContoller.logOut ));
-router.get('/getaccesstoken', asyncHandler( AuthContoller.handleRefreshToken ));
+router.get('/get-new-access-token', asyncHandler( AuthContoller.handleRefreshToken ));
 
 module.exports = router;
 

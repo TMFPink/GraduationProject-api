@@ -26,7 +26,20 @@ class UserService {
         return user;
     }
 
-    static get_all = async () => {
+    static get_all = async (requestingUser) => {
+        // Check if the user is admin
+        if (!requestingUser) {
+            throw new BadRequestError('Access denied: Admins only');
+        }
+        // Fetch the role name for the requesting user
+        const role = await db.Role.findOne({
+            where: { role_id: requestingUser.role_id },
+            attributes: ['name'],
+            raw: true
+        });
+        if (!role || role.name !== 'admin') {
+            throw new BadRequestError('Access denied: Admins only');
+        }
         const users = await db.User.findAll({ raw: true });
         return users;
     }

@@ -2,10 +2,13 @@ const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const { appSpecification } = require('../../configs/Documentation/swagger-config');
 
-users_api = express();
+
+const userRouter = require('./user');
+
+const users_api = express();
+
 users_api.use('/api-docs', swaggerUi.serveFiles(appSpecification), swaggerUi.setup(appSpecification));
-users_api.use('/cards', (req, res) => {
-    res.json({ message: 'This is the cards endpoint' });
-});
+
+users_api.use('/users', userRouter);
 
 module.exports = users_api;

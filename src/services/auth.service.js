@@ -1,6 +1,6 @@
 "use strict";
 const bcrypt = require("bcrypt");
-// const { generateUUID } = require("../helpers/index");
+const { generateUUID } = require("../helpers/helpers");
 const db = require("../models/index");
 const {
   ConflictRequestError,
