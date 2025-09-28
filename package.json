@@ -5,6 +5,7 @@
   "scripts": {
     "start:dev": "NODE_ENV=development & nodemon server.js",
     "start:prod": "NODE_ENV=production & node ./server.js",
+    "migrate:generate": "npx sequelize-mig migration:make -n",
     "migrate:up": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
     "migrate:undo:all": "npx sequelize-cli db:migrate:undo:all"
@@ -35,9 +36,11 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.0",
-    "sequelize-cli": "^6.6.2"
+    "sequelize-cli": "^6.6.2",
+    "sequelize-mig": "^3.1.3"
   },
   "nodemonConfig": {
     "ext": "js,json,yaml,yml"
-  }
+  },
+  "packageManager": "yarn@4.1.0+sha512.5b7bc055cad63273dda27df1570a5d2eb4a9f03b35b394d3d55393c2a5560a17f5cef30944b11d6a48bcbcfc1c3a26d618aae77044774c529ba36cb771ad5b0f"
 }

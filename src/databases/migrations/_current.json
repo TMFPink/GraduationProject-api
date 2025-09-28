@@ -1,0 +1,169 @@
+{
+    "tables": {
+        "permissions": {
+            "tableName": "permissions",
+            "schema": {
+                "permission_id": {
+                    "primaryKey": true,
+                    "field": "permission_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "path": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "path",
+                    "seqType": "Sequelize.STRING"
+                },
+                "method": {
+                    "allowNull": false,
+                    "field": "method",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "roles": {
+            "tableName": "roles",
+            "schema": {
+                "role_id": {
+                    "primaryKey": true,
+                    "field": "role_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "name": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "name",
+                    "seqType": "Sequelize.ENUM('admin', 'user')"
+                }
+            },
+            "indexes": []
+        },
+        "role_permissions": {
+            "tableName": "role_permissions",
+            "schema": {
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "role_id": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "roles",
+                        "key": "role_id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "field": "role_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "permission_id": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "permissions",
+                        "key": "permission_id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "field": "permission_id",
+                    "seqType": "Sequelize.UUID"
+                }
+            },
+            "indexes": []
+        },
+        "users": {
+            "tableName": "users",
+            "schema": {
+                "user_id": {
+                    "primaryKey": true,
+                    "field": "user_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "email": {
+                    "allowNull": false,
+                    "field": "email",
+                    "seqType": "Sequelize.STRING"
+                },
+                "hash_password": {
+                    "allowNull": false,
+                    "field": "hash_password",
+                    "seqType": "Sequelize.STRING"
+                },
+                "first_name": {
+                    "allowNull": false,
+                    "field": "first_name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "last_name": {
+                    "allowNull": false,
+                    "field": "last_name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "phone_number": {
+                    "allowNull": false,
+                    "field": "phone_number",
+                    "seqType": "Sequelize.STRING"
+                },
+                "is_active": {
+                    "defaultValue": {
+                        "value": true
+                    },
+                    "field": "is_active",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "refresh_token": {
+                    "allowNull": true,
+                    "field": "refresh_token",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "role_id": {
+                    "allowNull": true,
+                    "field": "role_id",
+                    "references": {
+                        "model": "roles",
+                        "key": "role_id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "deletedAt": {
+                    "allowNull": true,
+                    "field": "deletedAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        }
+    },
+    "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
+    "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
+    "exists": false,
+    "revision": 1
+}
