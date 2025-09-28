@@ -24,10 +24,10 @@ const admin = {
           }
         ]
     },
-    apis: [path.join(__dirname, 'admin', '**', '*.yaml')], // files containing annotations as above
+    apis: [path.join(__dirname, 'admin', '**', '*.yml')], // files containing annotations as above
 };
  
-const web = {
+const app = {
     definition: {
         openapi: '3.0.0',
         info: {
@@ -41,20 +41,20 @@ const web = {
         },
         servers: [
           {
-            url: 'http://localhost:3000/v1/users',
+            url: 'http://localhost:3000/v1/mobile-app',
             name: 'development',
           },
           {
-            url: 'https://api.yourrlove.com/v1/users',
+            url: 'https://api.yourrlove.com/v1/mobile-app',
             name: 'production',
           }
         ]
     },
-    apis: [path.join(__dirname, 'users', '**', '*.yaml')], // files containing annotations as above
+    apis: [path.join(__dirname, 'mobile-app', '**', '*.yml')], // files containing annotations as above
 };
  
 
 module.exports = {
     adminSpecification: swaggerJsdoc(admin),
-    webSpecification: swaggerJsdoc(web),
+    appSpecification: swaggerJsdoc(app),
 };

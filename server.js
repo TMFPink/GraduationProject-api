@@ -7,6 +7,7 @@ const PORT = 3000;
 const server = app.listen( PORT, () => {
     
     console.log(`Connected: ${PORT}`)
+    console.log(`API docs: http://localhost:${PORT}/v1/users/api-docs`)
 })
 
 process.on('SIGINT', () => {
