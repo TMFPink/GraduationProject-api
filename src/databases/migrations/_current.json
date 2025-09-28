@@ -1,0 +1,766 @@
+{
+    "tables": {
+        "blocks": {
+            "tableName": "blocks",
+            "schema": {
+                "block_id": {
+                    "primaryKey": true,
+                    "field": "block_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "blocker_id": {
+                    "allowNull": false,
+                    "field": "blocker_id",
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "blocked_id": {
+                    "allowNull": false,
+                    "field": "blocked_id",
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "cards": {
+            "tableName": "cards",
+            "schema": {
+                "card_id": {
+                    "primaryKey": true,
+                    "field": "card_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "name": {
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "rarity": {
+                    "field": "rarity",
+                    "seqType": "Sequelize.STRING"
+                },
+                "card_domain_id": {
+                    "field": "card_domain_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "card_domains",
+                        "key": "card_domain_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "image_normal_url": {
+                    "field": "image_normal_url",
+                    "seqType": "Sequelize.STRING"
+                },
+                "image_large_url": {
+                    "field": "image_large_url",
+                    "seqType": "Sequelize.STRING"
+                },
+                "image_thumb_url": {
+                    "field": "image_thumb_url",
+                    "seqType": "Sequelize.STRING"
+                },
+                "meta_data": {
+                    "field": "meta_data",
+                    "seqType": "Sequelize.JSONB"
+                }
+            },
+            "indexes": []
+        },
+        "card_domains": {
+            "tableName": "card_domains",
+            "schema": {
+                "card_domain_id": {
+                    "primaryKey": true,
+                    "field": "card_domain_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "domain": {
+                    "allowNull": false,
+                    "field": "domain",
+                    "seqType": "Sequelize.STRING"
+                }
+            },
+            "indexes": []
+        },
+        "collection_cards": {
+            "tableName": "collection_cards",
+            "schema": {
+                "collection_card_id": {
+                    "primaryKey": true,
+                    "field": "collection_card_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "collection_id": {
+                    "allowNull": false,
+                    "field": "collection_id",
+                    "references": {
+                        "model": "collections",
+                        "key": "collection_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "card_id": {
+                    "allowNull": false,
+                    "field": "card_id",
+                    "references": {
+                        "model": "cards",
+                        "key": "card_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                }
+            },
+            "indexes": []
+        },
+        "collections": {
+            "tableName": "collections",
+            "schema": {
+                "collection_id": {
+                    "primaryKey": true,
+                    "field": "collection_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "user_id": {
+                    "field": "user_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "name": {
+                    "allowNull": false,
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "comments": {
+            "tableName": "comments",
+            "schema": {
+                "comment_id": {
+                    "primaryKey": true,
+                    "field": "comment_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "post_id": {
+                    "field": "post_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "posts",
+                        "key": "post_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "user_id": {
+                    "field": "user_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "content": {
+                    "field": "content",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "upvotes": {
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "upvotes",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "downvotes": {
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "downvotes",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "parent_id": {
+                    "field": "parent_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "comments",
+                        "key": "comment_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "deck_cards": {
+            "tableName": "deck_cards",
+            "schema": {
+                "deck_card_id": {
+                    "primaryKey": true,
+                    "field": "deck_card_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "deck_id": {
+                    "allowNull": false,
+                    "field": "deck_id",
+                    "references": {
+                        "model": "decks",
+                        "key": "deck_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "card_id": {
+                    "allowNull": false,
+                    "field": "card_id",
+                    "references": {
+                        "model": "cards",
+                        "key": "card_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "quantity": {
+                    "defaultValue": {
+                        "value": 1
+                    },
+                    "field": "quantity",
+                    "seqType": "Sequelize.INTEGER"
+                }
+            },
+            "indexes": []
+        },
+        "decks": {
+            "tableName": "decks",
+            "schema": {
+                "deck_id": {
+                    "primaryKey": true,
+                    "field": "deck_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "user_id": {
+                    "field": "user_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "name": {
+                    "allowNull": false,
+                    "field": "name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "card_domain_id": {
+                    "allowNull": false,
+                    "field": "card_domain_id",
+                    "references": {
+                        "model": "card_domains",
+                        "key": "card_domain_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "follows": {
+            "tableName": "follows",
+            "schema": {
+                "follow_id": {
+                    "primaryKey": true,
+                    "field": "follow_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "follower_id": {
+                    "allowNull": false,
+                    "field": "follower_id",
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "following_id": {
+                    "allowNull": false,
+                    "field": "following_id",
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "messages": {
+            "tableName": "messages",
+            "schema": {
+                "message_id": {
+                    "primaryKey": true,
+                    "field": "message_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "sender_id": {
+                    "field": "sender_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "receiver_id": {
+                    "field": "receiver_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "content": {
+                    "field": "content",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "is_read": {
+                    "defaultValue": {
+                        "value": false
+                    },
+                    "field": "is_read",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "notifications": {
+            "tableName": "notifications",
+            "schema": {
+                "notification_id": {
+                    "primaryKey": true,
+                    "field": "notification_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "user_id": {
+                    "field": "user_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "type": {
+                    "field": "type",
+                    "seqType": "Sequelize.STRING"
+                },
+                "content": {
+                    "field": "content",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "is_read": {
+                    "defaultValue": {
+                        "value": false
+                    },
+                    "field": "is_read",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "permissions": {
+            "tableName": "permissions",
+            "schema": {
+                "permission_id": {
+                    "primaryKey": true,
+                    "field": "permission_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "path": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "path",
+                    "seqType": "Sequelize.STRING"
+                },
+                "method": {
+                    "allowNull": false,
+                    "field": "method",
+                    "seqType": "Sequelize.STRING"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "posts": {
+            "tableName": "posts",
+            "schema": {
+                "post_id": {
+                    "primaryKey": true,
+                    "field": "post_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "user_id": {
+                    "field": "user_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "title": {
+                    "field": "title",
+                    "seqType": "Sequelize.STRING"
+                },
+                "content": {
+                    "field": "content",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "thumbnail": {
+                    "field": "thumbnail",
+                    "seqType": "Sequelize.STRING"
+                },
+                "media_url": {
+                    "field": "media_url",
+                    "seqType": "Sequelize.STRING"
+                },
+                "tags": {
+                    "field": "tags",
+                    "seqType": "Sequelize.ARRAY(Sequelize.STRING)"
+                },
+                "upvotes": {
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "upvotes",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "downvotes": {
+                    "defaultValue": {
+                        "value": 0
+                    },
+                    "field": "downvotes",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "reports": {
+            "tableName": "reports",
+            "schema": {
+                "report_id": {
+                    "primaryKey": true,
+                    "field": "report_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "reporter_id": {
+                    "field": "reporter_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "target_type": {
+                    "allowNull": false,
+                    "field": "target_type",
+                    "seqType": "Sequelize.ENUM('post', 'comment')"
+                },
+                "target_id": {
+                    "field": "target_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "reason": {
+                    "field": "reason",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "status": {
+                    "defaultValue": {
+                        "value": "pending"
+                    },
+                    "field": "status",
+                    "seqType": "Sequelize.ENUM('pending', 'approved', 'dismissed')"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
+        "roles": {
+            "tableName": "roles",
+            "schema": {
+                "role_id": {
+                    "primaryKey": true,
+                    "field": "role_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "name": {
+                    "allowNull": false,
+                    "unique": true,
+                    "field": "name",
+                    "seqType": "Sequelize.ENUM('admin', 'user')"
+                }
+            },
+            "indexes": []
+        },
+        "role_permissions": {
+            "tableName": "role_permissions",
+            "schema": {
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "role_id": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "roles",
+                        "key": "role_id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "field": "role_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "permission_id": {
+                    "primaryKey": true,
+                    "references": {
+                        "model": "permissions",
+                        "key": "permission_id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "field": "permission_id",
+                    "seqType": "Sequelize.UUID"
+                }
+            },
+            "indexes": []
+        },
+        "users": {
+            "tableName": "users",
+            "schema": {
+                "user_id": {
+                    "primaryKey": true,
+                    "field": "user_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "email": {
+                    "allowNull": false,
+                    "field": "email",
+                    "seqType": "Sequelize.STRING"
+                },
+                "hash_password": {
+                    "allowNull": false,
+                    "field": "hash_password",
+                    "seqType": "Sequelize.STRING"
+                },
+                "first_name": {
+                    "allowNull": false,
+                    "field": "first_name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "last_name": {
+                    "allowNull": false,
+                    "field": "last_name",
+                    "seqType": "Sequelize.STRING"
+                },
+                "phone_number": {
+                    "allowNull": false,
+                    "field": "phone_number",
+                    "seqType": "Sequelize.STRING"
+                },
+                "is_active": {
+                    "defaultValue": {
+                        "value": true
+                    },
+                    "field": "is_active",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "refresh_token": {
+                    "allowNull": true,
+                    "field": "refresh_token",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "role_id": {
+                    "allowNull": true,
+                    "field": "role_id",
+                    "references": {
+                        "model": "roles",
+                        "key": "role_id"
+                    },
+                    "onDelete": "SET NULL",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "deletedAt": {
+                    "allowNull": true,
+                    "field": "deletedAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        }
+    },
+    "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
+    "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
+    "exists": true,
+    "revision": 3
+}
