@@ -5,7 +5,8 @@
   "scripts": {
     "start:dev": "NODE_ENV=development & nodemon server.js",
     "start:prod": "NODE_ENV=production & node ./server.js",
-    "migrate:generate": "npx sequelize-mig migration:make -n",
+    "migrate:generate-new": "npx sequelize-cli migration:generate -n",
+    "migrate:auto-generate": "npx sequelize-mig migration:make -n",
     "migrate:up": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
     "migrate:undo:all": "npx sequelize-cli db:migrate:undo:all"
