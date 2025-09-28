@@ -55,20 +55,21 @@
                     "field": "name",
                     "seqType": "Sequelize.STRING"
                 },
+                "description": {
+                    "field": "description",
+                    "seqType": "Sequelize.TEXT"
+                },
+                "type": {
+                    "field": "type",
+                    "seqType": "Sequelize.STRING"
+                },
                 "rarity": {
                     "field": "rarity",
                     "seqType": "Sequelize.STRING"
                 },
-                "card_domain_id": {
-                    "field": "card_domain_id",
-                    "allowNull": true,
-                    "references": {
-                        "model": "card_domains",
-                        "key": "card_domain_id"
-                    },
-                    "onDelete": "NO ACTION",
-                    "onUpdate": "CASCADE",
-                    "seqType": "Sequelize.UUID"
+                "set_name": {
+                    "field": "set_name",
+                    "seqType": "Sequelize.STRING"
                 },
                 "image_normal_url": {
                     "field": "image_normal_url",
@@ -85,22 +86,6 @@
                 "meta_data": {
                     "field": "meta_data",
                     "seqType": "Sequelize.JSONB"
-                }
-            },
-            "indexes": []
-        },
-        "card_domains": {
-            "tableName": "card_domains",
-            "schema": {
-                "card_domain_id": {
-                    "primaryKey": true,
-                    "field": "card_domain_id",
-                    "seqType": "Sequelize.UUID"
-                },
-                "domain": {
-                    "allowNull": false,
-                    "field": "domain",
-                    "seqType": "Sequelize.STRING"
                 }
             },
             "indexes": []
@@ -311,16 +296,13 @@
                     "field": "name",
                     "seqType": "Sequelize.STRING"
                 },
-                "card_domain_id": {
-                    "allowNull": false,
-                    "field": "card_domain_id",
-                    "references": {
-                        "model": "card_domains",
-                        "key": "card_domain_id"
-                    },
-                    "onDelete": "NO ACTION",
-                    "onUpdate": "CASCADE",
-                    "seqType": "Sequelize.UUID"
+                "game": {
+                    "field": "game",
+                    "seqType": "Sequelize.STRING"
+                },
+                "ban_list": {
+                    "field": "ban_list",
+                    "seqType": "Sequelize.STRING"
                 },
                 "createdAt": {
                     "allowNull": false,
@@ -762,5 +744,5 @@
     "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
     "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
     "exists": true,
-    "revision": 3
+    "revision": 2
 }
