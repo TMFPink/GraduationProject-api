@@ -11,12 +11,12 @@ module.exports = {
       { role_id: adminRoleId, name: 'admin' },
       { role_id: userRoleId, name: 'user' }
     ];
-    await queryInterface.bulkInsert('roles', roles, {});
+    await queryInterface.findOrCreate('roles', roles, {});
 
     // 2. Insert admin user with adminRoleId
     const adminUserId = uuidv4();
     const passwordHash = await bcrypt.hash('Adminmothaiba', 10); 
-    await queryInterface.bulkInsert('users', [
+    await queryInterface.findOrCreate('users', [
       {
         user_id: adminUserId, // Add this line
         first_name: 'Admin',
@@ -32,7 +32,7 @@ module.exports = {
   },
 
   down: async (queryInterface, Sequelize) => {
-    await queryInterface.bulkDelete('users', { email: 'admin@gmail.com' }, {});
-    await queryInterface.bulkDelete('roles', { name: ['admin', 'user'] }, {});
+    // await queryInterface.bulkDelete('users', { email: 'admin@gmail.com' }, {});
+    // await queryInterface.bulkDelete('roles', { name: ['admin', 'user'] }, {});
   }
 };

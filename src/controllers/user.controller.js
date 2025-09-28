@@ -38,6 +38,13 @@ class UserController {
             metadata: await UserService.get_basic_infor(req.user.user_id)
         }).send(res);
     }
+
+    get_user_by_id = async (req, res, next) => {
+        new OK({
+            message: 'User retrieved successfully',
+            metadata: await UserService.getUserDetails(req.params.id)
+        }).send(res);
+    }
 }
 
 module.exports = new UserController();

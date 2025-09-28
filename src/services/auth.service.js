@@ -1,16 +1,16 @@
-"use strict";
-const bcrypt = require("bcrypt");
-const { generateUUID } = require("../helpers/helpers");
-const db = require("../models/index");
+'use strict';
+const bcrypt = require('bcrypt');
+const { generateUUID } = require('../helpers/helpers');
+const db = require('../models/index');
 const {
   ConflictRequestError,
   AuthFailureError,
   ForbiddenRequestError,
-  BadRequestError
-} = require("../core/error.response");
-const { createKeyTokenPair } = require("../utils/authUtils");
-const JWT = require("jsonwebtoken");
-const UserService = require("../services/user.service");
+  BadRequestError,
+} = require('../core/error.response');
+const { createKeyTokenPair } = require('../utils/authUtils');
+const JWT = require('jsonwebtoken');
+const UserService = require('../services/user.service');
 
 class AuthService {
   static signUp = async ({
@@ -26,16 +26,16 @@ class AuthService {
       { raw: true }
     );
     if (isEmailExists)
-      throw new ConflictRequestError("Email already registered!");
+      throw new ConflictRequestError('Email already registered!');
 
     // step 2: has password
     const passwordHash = await bcrypt.hash(password, 10);
-    const role_id  = await db.Role.findOne({
+    const role_id = await db.Role.findOne({
       where: { name: 'user' },
-      attributes: ["role_id"],
+      attributes: ['role_id'],
       raw: true,
     });
-    if (!role_id) throw new BadRequestError("Role not found");
+    if (!role_id) throw new BadRequestError('Role not found');
     const user_id = generateUUID();
     // step3: create token pair
     const tokens = createKeyTokenPair(
@@ -43,7 +43,7 @@ class AuthService {
       process.env.ACCESS_TOKEN_KEY_SECRET,
       process.env.REFRESH_TOKEN_KEY_SECRET
     );
-    if (!tokens) throw new ConflictRequestError("Failed to create tokens!");
+    if (!tokens) throw new ConflictRequestError('Failed to create tokens!');
     const newUser = await UserService.create({
       user_id,
       first_name,
@@ -59,9 +59,9 @@ class AuthService {
 
   static logIn = async ({ email, password }) => {
     const user = await db.User.findOne({ where: { email: email } });
-    if (!user) throw new AuthFailureError("Wrong email!");
+    if (!user) throw new AuthFailureError('Wrong email!');
     const isPassMatch = await bcrypt.compare(password, user.hash_password);
-    if (!isPassMatch) throw new AuthFailureError("Wrong password!");
+    if (!isPassMatch) throw new AuthFailureError('Wrong password!');
 
     const token = createKeyTokenPair(
       { user_id: user.user_id, role_id: user.role_id },
@@ -83,7 +83,7 @@ class AuthService {
       refreshToken,
       process.env.REFRESH_TOKEN_KEY_SECRET,
       (err, decoded) => {
-        if (err) throw new AuthFailureError("Invalid refreshToken!");
+        if (err) throw new AuthFailureError('Invalid refreshToken!');
         user_id = decoded.user_id;
       }
     );
@@ -105,7 +105,7 @@ class AuthService {
     const user = await db.User.findOne({
       where: { refresh_token: refreshToken },
     });
-    if (!user) throw new ForbiddenRequestError("Refresh token not found!");
+    if (!user) throw new ForbiddenRequestError('Refresh token not found!');
 
     // verify refreshToken
     JWT.verify(
@@ -113,7 +113,7 @@ class AuthService {
       process.env.REFRESH_TOKEN_KEY_SECRET,
       (err, decoded) => {
         if (err || decoded.user_id !== user.id)
-          throw new ForbiddenRequestError("Invalid RefreshToken!");
+          throw new ForbiddenRequestError('Invalid RefreshToken!');
       }
     );
 

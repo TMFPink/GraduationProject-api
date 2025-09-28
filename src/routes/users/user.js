@@ -6,5 +6,6 @@ const { asyncHandler } = require('../../helpers/helpers');
 
 router.get('/me', verifyToken, asyncHandler(userController.get_current_user));
 router.get('/', verifyToken, asyncHandler(userController.get_list_users));
+router.get('/:id', verifyToken, asyncHandler(userController.get_user_by_id));
 
 module.exports = router;
