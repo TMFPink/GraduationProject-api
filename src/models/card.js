@@ -5,6 +5,8 @@ module.exports = (sequelize, DataTypes) => {
   class Card extends Model {
     static associate(models) {
         Card.belongsTo(models.CardDomain, { foreignKey: 'card_domain_id', as: 'domain' });
+        Card.hasMany(models.CardImage, { foreignKey: 'card_id', as: 'images' });
+
     }
   }
   Card.init({

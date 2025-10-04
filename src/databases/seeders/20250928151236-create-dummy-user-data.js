@@ -16,7 +16,7 @@ module.exports = {
     for (let i = 1; i <= 10; i++) {
       users.push({
         user_id: uuidv4(),
-        first_name: `User${i}`,
+        first_name: `User-${i}`,
         last_name: `Test${i}`,
         email: `user${i}@example.com`,
         hash_password: await bcrypt.hash('Password123', 10),
@@ -27,7 +27,7 @@ module.exports = {
       });
     }
 
-    await queryInterface.findOrCreate('users', users, {});
+    await queryInterface.bulkInsert('users', users, {});
   },
 
   async down (queryInterface, Sequelize) {
