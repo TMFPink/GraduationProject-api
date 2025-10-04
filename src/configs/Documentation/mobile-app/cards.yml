@@ -1,0 +1,201 @@
+openapi: 3.0.0
+info:
+  title: Card Service
+  version: 1.0.0
+  description: API endpoints for Yu-Gi-Oh card management
+
+paths:
+  /cards:
+    get:
+      summary: Get all Yu-Gi-Oh cards
+      description: Retrieve a paginated list of cards, with optional search by name.
+      tags: [Card]
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+          description: 'Page number (default: 1)'
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 20
+          description: 'Number of cards per page (default: 20)'
+        - in: query
+          name: search
+          schema:
+            type: string
+            example: Blue-Eyes
+          description: 'Filter cards by name'
+      responses:
+        '200':
+          description: List of cards with pagination
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cards retrieved successfully
+                  metadata:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 12456
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
+
+  /cards/{id}:
+    get:
+      summary: Get a single card by ID
+      description: Retrieve full details of a specific card, including all image variants.
+      tags: [Card]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: 'Card ID (UUID)'
+      responses:
+        '200':
+          description: Card details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Card retrieved successfully
+                  metadata:
+                    $ref: '#/components/schemas/Card'
+
+  /cards/filter:
+    get:
+      summary: Filter cards by archetype or race
+      description: Retrieve a list of cards filtered by archetype or race.
+      tags: [Card]
+      parameters:
+        - in: query
+          name: archetype
+          schema:
+            type: string
+            example: Exosister
+          description: 'Filter cards by archetype'
+        - in: query
+          name: race
+          schema:
+            type: string
+            example: Fairy
+          description: 'Filter cards by race'
+      responses:
+        '200':
+          description: Filtered list of cards
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Cards filtered successfully
+                  metadata:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/CardBasic'
+
+components:
+  schemas:
+    Card:
+      type: object
+      properties:
+        card_id:
+          type: string
+          example: 8a1b33c6-7f3e-4a7a-bb02-93a2d09c9c4e
+        name:
+          type: string
+          example: Blue-Eyes White Dragon
+        rarity:
+          type: string
+          example: Ultra Rare
+        image_normal_url:
+          type: string
+          example: https://cdn.example.com/low_resolution/46986414.jpg
+        image_large_url:
+          type: string
+          example: https://cdn.example.com/original/46986414.jpg
+        image_thumb_url:
+          type: string
+          example: https://cdn.example.com/cropped/46986414.jpg
+        meta_data:
+          type: object
+          properties:
+            type:
+              type: string
+              example: Normal Monster
+            desc:
+              type: string
+              example: This legendary dragon is a powerful engine of destruction.
+            atk:
+              type: integer
+              example: 3000
+            def:
+              type: integer
+              example: 2500
+            level:
+              type: integer
+              example: 8
+            race:
+              type: string
+              example: Dragon
+            attribute:
+              type: string
+              example: LIGHT
+            archetype:
+              type: string
+              example: Blue-Eyes
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/CardImage'
+
+    CardBasic:
+      type: object
+      properties:
+        card_id:
+          type: string
+        name:
+          type: string
+        image_thumb_url:
+          type: string
+
+    CardImage:
+      type: object
+      properties:
+        card_image_id:
+          type: string
+        image_url:
+          type: string
+          example: https://cdn.example.com/low_resolution/46986414.jpg
+        image_url_small:
+          type: string
+          example: https://cdn.example.com/original/46986414.jpg
+        image_url_cropped:
+          type: string
+          example: https://cdn.example.com/cropped/46986414.jpg
+        is_default:
+          type: boolean
+          example: true
