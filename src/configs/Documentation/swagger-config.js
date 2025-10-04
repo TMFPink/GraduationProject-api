@@ -5,11 +5,11 @@ const admin = {
     definition: {
         openapi: '3.0.0',
         info: {
-          title: 'YOLO Website API for Admin',
-          description: "This is a REST api for YOLO website for Admin. You can find out more about YOLO at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).",
+          title: 'Card Community Website API for Admin',
+          description: "This is a REST api for Card Community website for Admin. You can find out more about Card Community at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).",
           version: '1.0.0',
           contact: {
-            email: 'nanhvt2708@gmail.com'
+            email: 'nguyenhongtranminh@gmail.com'
           },
           termsOfService: 'http://swagger.io/terms/'
         },
@@ -18,9 +18,20 @@ const admin = {
             url: 'http://localhost:3000/v1/admin',
             name: 'development',
           }, 
+         
+        ],
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+            }
+          }
+        },
+        security: [
           {
-            url: 'https://api.yourrlove.com/v1/admin',
-            name: 'production',
+            bearerAuth: []
           }
         ]
     },
@@ -31,8 +42,8 @@ const app = {
     definition: {
         openapi: '3.0.0',
         info: {
-          title: 'YOLO Website API',
-          description: "This is a REST api for YOLO website. You can find out more about YOLO at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).",
+          title: 'Card Community Website API',
+          description: "This is a REST api for Card Community website. You can find out more about Card Community at [http://swagger.io](http://swagger.io) or on [irc.freenode.net, #swagger](http://swagger.io/irc/).",
           version: '1.0.0',
           contact: {
             email: 'nanhvt2708@gmail.com'
@@ -41,12 +52,22 @@ const app = {
         },
         servers: [
           {
-            url: 'http://localhost:3000/v1/mobile-app',
+            url: 'http://localhost:3000/v1',
             name: 'development',
           },
+        ],
+        components: {
+          securitySchemes: {
+            bearerAuth: {
+              type: 'http',
+              scheme: 'bearer',
+              bearerFormat: 'JWT',
+            }
+          }
+        },
+        security: [
           {
-            url: 'https://api.yourrlove.com/v1/mobile-app',
-            name: 'production',
+            bearerAuth: []
           }
         ]
     },

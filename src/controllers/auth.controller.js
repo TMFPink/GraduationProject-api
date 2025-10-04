@@ -2,13 +2,15 @@
 const AuthService = require('../services/auth.service');
 const { CREATED, OK, NO_CONTENT } = require('../core/success.response');
 const { AuthFailureError } = require('../core/error.response');
+require('dotenv').config();
+const base_url = process.env.BASE_DOMAIN || 'localhost';
 
 class AuthContoller {
     signUp = async (req, res, next) => {
         const { accessToken, refreshToken } = await AuthService.signUp(req.body);
         // set cookie
         res.cookie('jwt', refreshToken, {
-            domain: 'api.yourrlove.com',
+            domain: base_url,
             path: '/',
             httpOnly: true,
             sameSite: 'None',
@@ -26,7 +28,7 @@ class AuthContoller {
         const { accessToken, refreshToken } = await AuthService.logIn(req.body);
         // set cookie
         res.cookie('jwt', refreshToken, {
-            domain: 'api.yourrlove.com',
+            domain: base_url,
             path: '/',
             httpOnly: true,
             sameSite: 'strict',
@@ -58,7 +60,7 @@ class AuthContoller {
         const { accessToken, refreshToken } = await AuthService.handleRefreshToken(cookies.jwt);
         // set cookie
         res.cookie('jwt', refreshToken, {
-            domain: 'api.yourrlove.com',
+            domain: base_url,
             path: '/',
             httpOnly: true,
             sameSite: 'None',
