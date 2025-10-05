@@ -9,11 +9,16 @@ class CardService {
    * Get all cards with pagination and optional search.
    * @param {Object} query - includes page, limit, search
    */
-  static get_all = async ({ page = 1, limit = 20, search }) => {
+  static get_all = async ({ domain = 'ygo', page = 1, limit = 20, search }) => {
     const where = {};
 
     if (search) {
       where.name = { [Op.iLike]: `%${search}%` };
+    }
+    if (domain == 'ygo') {
+      where.card_domain_id = '11111111-1111-1111-1111-111111111111';
+    } else if (domain == 'pkm') {
+      where.card_domain_id = '22222222-2222-2222-2222-222222222222';
     }
 
     const offset = (page - 1) * limit;
@@ -31,19 +36,7 @@ class CardService {
         'image_large_url',
         'image_thumb_url',
       ],
-      include: [
-        {
-          model: db.CardImage,
-          as: 'images',
-          attributes: [
-            'card_image_id',
-            'image_url',
-            'image_url_small',
-            'image_url_cropped',
-            'is_default',
-          ],
-        },
-      ],
+
       distinct: true,
     });
 

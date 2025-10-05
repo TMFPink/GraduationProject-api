@@ -2,15 +2,21 @@ openapi: 3.0.0
 info:
   title: Card Service
   version: 1.0.0
-  description: API endpoints for Yu-Gi-Oh card management
+  description: API endpoints for card management
 
 paths:
   /cards:
     get:
-      summary: Get all Yu-Gi-Oh cards
+      summary: Get all cards
       description: Retrieve a paginated list of cards, with optional search by name.
       tags: [Card]
       parameters:
+        - in: query
+          name: domain
+          schema:
+            type: string
+            example: ygo
+          description: 'Domain to filter cards (default: ygo)'
         - in: query
           name: page
           schema:
