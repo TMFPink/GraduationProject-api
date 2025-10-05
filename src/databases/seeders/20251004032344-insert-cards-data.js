@@ -16,7 +16,7 @@ function cleanJSON(obj) {
 
 module.exports = {
   async up(queryInterface, Sequelize) {
-    const BASE_URL = process.env.R2_URL;
+    const BASE_URL = process.env.R2_URL_YGO;
     if (!BASE_URL) throw new Error('Missing R2_URL in environment.');
 
     console.log('Using image base URL:', BASE_URL);
@@ -56,7 +56,7 @@ module.exports = {
           card_id: cardId,
           name: card.name,
           rarity: card.card_sets?.[0]?.set_rarity || 'Unknown',
-          card_domain_id: null,
+          card_domain_id: '11111111-1111-1111-1111-111111111111',
           image_normal_url: defaultLowRes,
           image_large_url: defaultOriginal,
           image_thumb_url: defaultCropped,
@@ -90,9 +90,7 @@ module.exports = {
 
       console.log('Inserting card images...');
       for (let i = 0; i < imageRows.length; i += batchSize) {
-        const batch = imageRows.slice(i, i + batchSize);
-        console.log(`  -> Batch ${i / batchSize + 1} (${batch.length} images)`);
-        
+        const batch = imageRows.slice(i, i + batchSize);        
       }
 
       await transaction.commit();
@@ -105,11 +103,14 @@ module.exports = {
   },
 
   async down(queryInterface, Sequelize) {
-    console.log('Reverting seeded cards and images...');
+    console.log('Reverting YGO seeded cards and images...');
     const transaction = await queryInterface.sequelize.transaction();
     try {
+      // await queryInterface.bulkDelete('cards',null, { transaction });
       await queryInterface.bulkDelete('card_images', null, { transaction });
-      await queryInterface.bulkDelete('cards', null, { transaction });
+      await queryInterface.bulkDelete('cards', {
+        card_domain_id: '11111111-1111-1111-1111-111111111111'
+      }, { transaction });
       await transaction.commit();
       console.log('All card and image data deleted successfully.');
     } catch (err) {
