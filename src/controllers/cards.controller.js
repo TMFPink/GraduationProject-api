@@ -18,10 +18,10 @@ class CardController {
     }).send(res);
   };
 
-  get_cards_by_filter = async (req, res, next) => {
+  get_cards_by_meta = async (req, res, next) => {
     new OK({
-      message: 'Cards filtered successfully',
-      metadata: await CardService.get_by_filter(req.query),
+      message: 'Cards retrieved by meta data successfully',
+      metadata: await CardService.get_by_meta(req.query),
     }).send(res);
   };
 }

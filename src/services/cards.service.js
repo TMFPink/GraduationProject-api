@@ -2,7 +2,7 @@
 
 const db = require('../models');
 const { BadRequestError } = require('../core/error.response');
-const { Op } = require('sequelize');
+const { Op, Sequelize } = require('sequelize');
 
 class CardService {
   /**
@@ -75,21 +75,63 @@ class CardService {
   };
 
   /**
-   * Get cards by archetype or race
+   * Get cards by specific JSON meta field.
+   * @example
+   * key=attribute&value=Dark&domain=ygo
+   * key=hp&value=120&domain=pkm
    */
-  static get_by_filter = async ({ archetype, race }) => {
-    const where = {};
-    if (archetype) where['meta_data.archetype'] = archetype;
-    if (race) where['meta_data.race'] = race;
+  static get_by_meta = async (query) => {
+    const { domain = 'ygo', page = 1, limit = 20, ...filters } = query;
 
-    const cards = await db.Card.findAll({
-      where,
-      limit: 100,
-      attributes: ['card_id', 'name', 'image_thumb_url'],
-      raw: true,
+    const where = {};
+
+    // Handle domain
+    if (domain === 'ygo') {
+      where.card_domain_id = '11111111-1111-1111-1111-111111111111';
+    } else if (domain === 'pkm') {
+      where.card_domain_id = '22222222-2222-2222-2222-222222222222';
+    }
+
+    // Build meta filters dynamically
+    const metaConditions = Object.entries(filters)
+      .filter(
+        ([key]) => !['domain', 'page', 'limit', 'key', 'value'].includes(key)
+      )
+      .map(([key, value]) => {
+        return Sequelize.where(Sequelize.json(`meta_data.${key}`), {
+          [Op.iLike]: `%${value}%`,
+        });
+      });
+
+    const offset = (page - 1) * limit;
+
+    const { count, rows } = await db.Card.findAndCountAll({
+      where: {
+        ...where,
+        [Op.and]: metaConditions,
+      },
+      limit,
+      offset,
+      order: [['name', 'ASC']],
+      attributes: [
+        'card_id',
+        'name',
+        'rarity',
+        'image_normal_url',
+        'image_large_url',
+        'image_thumb_url',
+        'meta_data',
+      ],
+      distinct: true,
     });
 
-    return cards;
+    return {
+      total: count,
+      page: Number(page),
+      limit: Number(limit),
+      filters: filters,
+      cards: rows,
+    };
   };
 }
 

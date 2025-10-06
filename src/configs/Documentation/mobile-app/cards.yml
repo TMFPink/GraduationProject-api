@@ -1,8 +1,12 @@
 openapi: 3.0.0
 info:
   title: Card Service
-  version: 1.0.0
-  description: API endpoints for card management
+  version: 1.1.0
+  description: API endpoints for card management across different domains (Yu-Gi-Oh! and Pokémon)
+
+tags:
+  - name: Card
+    description: Endpoints for retrieving card data
 
 paths:
   /cards:
@@ -15,6 +19,7 @@ paths:
           name: domain
           schema:
             type: string
+            enum: [ygo, pkm]
             example: ygo
           description: 'Domain to filter cards (default: ygo)'
         - in: query
@@ -89,27 +94,46 @@ paths:
                   metadata:
                     $ref: '#/components/schemas/Card'
 
-  /cards/filter:
+  /cards/meta-data:
     get:
-      summary: Filter cards by archetype or race
-      description: Retrieve a list of cards filtered by archetype or race.
+      summary: Filter cards by meta data fields
+      description: >
+        Query cards by one or multiple meta_data fields.
+        Examples:
+          - `/cards/meta-data?domain=ygo&attribute=Dark&race=Dragon`
+          - `/cards/meta-data?domain=pkm&hp=120&types=Fire`
       tags: [Card]
       parameters:
         - in: query
-          name: archetype
+          name: domain
           schema:
             type: string
-            example: Exosister
-          description: 'Filter cards by archetype'
+            example: ygo
+          description: 'Domain of cards (ygo or pkm)'
         - in: query
-          name: race
+          name: page
           schema:
-            type: string
-            example: Fairy
-          description: 'Filter cards by race'
+            type: integer
+            example: 1
+          description: 'Page number (default: 1)'
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 20
+          description: 'Number of cards per page (default: 20)'
+        - in: query
+          name: filters
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+          style: form
+          explode: true
+          description: 'Dynamic meta filters, e.g. ?attribute=Dark&race=Dragon&archetype=Blue-Eyes'
       responses:
         '200':
-          description: Filtered list of cards
+          description: Filtered list of cards based on meta_data
           content:
             application/json:
               schema:
@@ -117,11 +141,28 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: Cards filtered successfully
+                    example: Cards retrieved by meta data successfully
                   metadata:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/CardBasic'
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                        example: 300
+                      page:
+                        type: integer
+                        example: 1
+                      limit:
+                        type: integer
+                        example: 20
+                      filters:
+                        type: object
+                        example:
+                          attribute: Dark
+                          race: Dragon
+                      cards:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Card'
 
 components:
   schemas:
@@ -147,32 +188,9 @@ components:
           type: string
           example: https://cdn.example.com/cropped/46986414.jpg
         meta_data:
-          type: object
-          properties:
-            type:
-              type: string
-              example: Normal Monster
-            desc:
-              type: string
-              example: This legendary dragon is a powerful engine of destruction.
-            atk:
-              type: integer
-              example: 3000
-            def:
-              type: integer
-              example: 2500
-            level:
-              type: integer
-              example: 8
-            race:
-              type: string
-              example: Dragon
-            attribute:
-              type: string
-              example: LIGHT
-            archetype:
-              type: string
-              example: Blue-Eyes
+          oneOf:
+            - $ref: '#/components/schemas/YGO_MetaData'
+            - $ref: '#/components/schemas/PKM_MetaData'
         images:
           type: array
           items:
@@ -205,3 +223,130 @@ components:
         is_default:
           type: boolean
           example: true
+
+    # ----------------------------
+    # Yu-Gi-Oh! Metadata Model
+    # ----------------------------
+    YGO_MetaData:
+      type: object
+      description: Metadata structure for Yu-Gi-Oh! cards
+      properties:
+        type:
+          type: string
+          example: Effect Monster
+        desc:
+          type: string
+          example: This monster can destroy your opponent’s card when summoned.
+        atk:
+          type: integer
+          example: 2500
+        def:
+          type: integer
+          example: 2000
+        level:
+          type: integer
+          example: 6
+        race:
+          type: string
+          example: Spellcaster
+        attribute:
+          type: string
+          example: DARK
+        archetype:
+          type: string
+          example: Dark Magician
+        sets:
+          type: array
+          items:
+            type: object
+            properties:
+              set_name:
+                type: string
+                example: Legend of Blue Eyes White Dragon
+              set_rarity:
+                type: string
+                example: Ultra Rare
+
+    # ----------------------------
+    # Pokémon Metadata Model
+    # ----------------------------
+    PKM_MetaData:
+      type: object
+      description: Metadata structure for Pokémon cards
+      properties:
+        id:
+          type: string
+          example: swsh7-25
+        name:
+          type: string
+          example: Pikachu
+        hp:
+          type: integer
+          example: 60
+        types:
+          type: array
+          items:
+            type: string
+          example: ['Electric']
+        stage:
+          type: string
+          example: Basic
+        abilities:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Static
+              text:
+                type: string
+                example: Prevent all damage done by attacks during your opponent’s next turn.
+        attacks:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: Thunderbolt
+              cost:
+                type: array
+                items:
+                  type: string
+                example: ['Electric', 'Colorless']
+              damage:
+                type: string
+                example: 90
+              text:
+                type: string
+                example: Discard all Energy from this Pokémon.
+        retreat:
+          type: integer
+          example: 1
+        rarity:
+          type: string
+          example: Rare Holo
+        set:
+          type: string
+          example: Sword & Shield – Evolving Skies
+        set_id:
+          type: string
+          example: swsh7
+        series:
+          type: string
+          example: Sword & Shield
+        dexId:
+          type: array
+          items:
+            type: integer
+          example: [25]
+        illustrator:
+          type: string
+          example: Mitsuhiro Arita
+        variants:
+          type: object
+          additionalProperties: true
+        regulationMark:
+          type: string
+          example: E
