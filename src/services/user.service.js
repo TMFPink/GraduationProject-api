@@ -53,8 +53,6 @@ class UserService {
       nest: true,
     });
 
-    console.log(currentUser);
-
     // if normal user
     if (currentUser.Role?.name === 'user') {
       where.role_id = await db.Role.findOne({
