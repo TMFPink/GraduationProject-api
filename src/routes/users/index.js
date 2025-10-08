@@ -7,6 +7,7 @@ const {
 const userRouter = require('./user');
 const cardsRouter = require('./cards');
 const followRouter = require('./follow');
+const reportRouter = require('./report');
 
 const users_api = express();
 
@@ -19,5 +20,6 @@ users_api.use(
 users_api.use('/users', userRouter);
 users_api.use('/cards', cardsRouter);
 users_api.use('/follow', followRouter);
+users_api.use('/report', reportRouter);
 
 module.exports = users_api;

@@ -7,21 +7,30 @@ module.exports = (sequelize, DataTypes) => {
       Report.belongsTo(models.User, { foreignKey: 'reporter_id' });
     }
   }
-  Report.init({
-    report_id: {
-      type: DataTypes.UUID,
-      primaryKey: true
+  Report.init(
+    {
+      report_id: {
+        type: DataTypes.UUID,
+        primaryKey: true,
+      },
+      reporter_id: DataTypes.UUID,
+      target_type: {
+        type: DataTypes.ENUM('user', 'post', 'comment'),
+        allowNull: false,
+      },
+      target_id: DataTypes.UUID,
+      reason: DataTypes.TEXT,
+      status: {
+        type: DataTypes.ENUM('pending', 'approved', 'dismissed'),
+        defaultValue: 'pending',
+      },
     },
-    reporter_id: DataTypes.UUID,
-    target_type: { type: DataTypes.ENUM('post', 'comment'), allowNull: false },
-    target_id: DataTypes.UUID,
-    reason: DataTypes.TEXT,
-    status: { type: DataTypes.ENUM('pending', 'approved', 'dismissed'), defaultValue: 'pending' }
-  }, {
-    sequelize,
-    modelName: 'Report',
-    tableName: 'reports',
-    timestamps: true
-  });
+    {
+      sequelize,
+      modelName: 'Report',
+      tableName: 'reports',
+      timestamps: true,
+    }
+  );
   return Report;
 };
