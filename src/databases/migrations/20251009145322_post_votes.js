@@ -9,7 +9,7 @@ const Sequelize = require("sequelize");
 
 const info = {
   revision: 6,
-  name: "noname",
+  name: "post_votes",
   created: "2025-10-09T14:53:22.045Z",
   comment: "",
 };

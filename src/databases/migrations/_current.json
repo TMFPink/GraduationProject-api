@@ -292,6 +292,48 @@
             },
             "indexes": []
         },
+        "comment_votes": {
+            "tableName": "comment_votes",
+            "schema": {
+                "id": {
+                    "allowNull": false,
+                    "primaryKey": true,
+                    "autoIncrement": true,
+                    "field": "id",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "user_id": {
+                    "field": "user_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "comment_id": {
+                    "field": "comment_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "comments",
+                        "key": "comment_id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "type": {
+                    "field": "type",
+                    "seqType": "Sequelize.ENUM('upvote', 'downvote')"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "deck_cards": {
             "tableName": "deck_cards",
             "schema": {
@@ -854,5 +896,5 @@
     "path": "/Users/nguyenhong/Documents/GraudationProject/GraduationProject-api/src/databases/migrations/_current.json",
     "backupPath": "/Users/nguyenhong/Documents/GraudationProject/GraduationProject-api/src/databases/migrations/_current_bak.json",
     "exists": true,
-    "revision": 6
+    "revision": 7
 }
