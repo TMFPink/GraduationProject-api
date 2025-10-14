@@ -104,8 +104,6 @@ paths:
                           type: string
                         email:
                           type: string
-                        avatar_url:
-                          type: string
         '404':
           description: User not found
 
@@ -161,8 +159,6 @@ paths:
                           type: string
                         email:
                           type: string
-                        avatar_url:
-                          type: string
         '404':
           description: User not found
 
@@ -211,8 +207,6 @@ paths:
                           type: string
                         email:
                           type: string
-                        avatar_url:
-                          type: string
         '401':
           description: Unauthorized
 
@@ -260,8 +254,6 @@ paths:
                         last_name:
                           type: string
                         email:
-                          type: string
-                        avatar_url:
                           type: string
         '401':
           description: Unauthorized
