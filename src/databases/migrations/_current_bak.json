@@ -105,6 +105,51 @@
             },
             "indexes": []
         },
+        "card_images": {
+            "tableName": "card_images",
+            "schema": {
+                "card_image_id": {
+                    "primaryKey": true,
+                    "field": "card_image_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "card_id": {
+                    "allowNull": false,
+                    "field": "card_id",
+                    "references": {
+                        "model": "cards",
+                        "key": "card_id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "image_url": {
+                    "field": "image_url",
+                    "seqType": "Sequelize.STRING"
+                },
+                "image_url_small": {
+                    "field": "image_url_small",
+                    "seqType": "Sequelize.STRING"
+                },
+                "image_url_cropped": {
+                    "field": "image_url_cropped",
+                    "seqType": "Sequelize.STRING"
+                },
+                "is_default": {
+                    "defaultValue": {
+                        "value": false
+                    },
+                    "field": "is_default",
+                    "seqType": "Sequelize.BOOLEAN"
+                },
+                "meta_data": {
+                    "field": "meta_data",
+                    "seqType": "Sequelize.JSONB"
+                }
+            },
+            "indexes": []
+        },
         "collection_cards": {
             "tableName": "collection_cards",
             "schema": {
@@ -577,6 +622,53 @@
             },
             "indexes": []
         },
+        "post_votes": {
+            "tableName": "post_votes",
+            "schema": {
+                "vote_id": {
+                    "primaryKey": true,
+                    "field": "vote_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "user_id": {
+                    "field": "user_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "post_id": {
+                    "field": "post_id",
+                    "allowNull": true,
+                    "references": {
+                        "model": "posts",
+                        "key": "post_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "value": {
+                    "field": "value",
+                    "seqType": "Sequelize.INTEGER"
+                },
+                "createdAt": {
+                    "allowNull": false,
+                    "field": "createdAt",
+                    "seqType": "Sequelize.DATE"
+                },
+                "updatedAt": {
+                    "allowNull": false,
+                    "field": "updatedAt",
+                    "seqType": "Sequelize.DATE"
+                }
+            },
+            "indexes": []
+        },
         "reports": {
             "tableName": "reports",
             "schema": {
@@ -599,7 +691,7 @@
                 "target_type": {
                     "allowNull": false,
                     "field": "target_type",
-                    "seqType": "Sequelize.ENUM('post', 'comment')"
+                    "seqType": "Sequelize.ENUM('user', 'post', 'comment')"
                 },
                 "target_id": {
                     "field": "target_id",
@@ -759,8 +851,8 @@
             "indexes": []
         }
     },
-    "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
-    "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
+    "path": "/Users/nguyenhong/Documents/GraudationProject/GraduationProject-api/src/databases/migrations/_current.json",
+    "backupPath": "/Users/nguyenhong/Documents/GraudationProject/GraduationProject-api/src/databases/migrations/_current_bak.json",
     "exists": true,
-    "revision": 3
+    "revision": 6
 }

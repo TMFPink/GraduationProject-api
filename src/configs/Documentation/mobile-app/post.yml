@@ -1,0 +1,289 @@
+openapi: 3.0.0
+info:
+  title: Post Service
+  version: 1.0.1
+  description: API endpoints for managing posts, including creation, fetching, voting, and deletion
+
+paths:
+  /posts:
+    get:
+      summary: Get all posts
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+        - in: query
+          name: tag
+          schema:
+            type: string
+            example: yugioh
+      responses:
+        '200':
+          description: List of all posts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  metadata:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      posts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+
+    post:
+      summary: Create a new post
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - title
+                - content
+              properties:
+                title:
+                  type: string
+                content:
+                  type: string
+                thumbnail:
+                  type: string
+                media_url:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '201':
+          description: Post created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  metadata:
+                    $ref: '#/components/schemas/Post'
+
+  /posts/{id}:
+    get:
+      summary: Get a post by ID
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: Post ID
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  metadata:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+
+    delete:
+      summary: Delete a post
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      description: Delete a post (only the owner may delete — enforced server-side)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: Post ID to delete
+      responses:
+        '200':
+          description: Post deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Post deleted successfully'
+        '403':
+          description: Forbidden (not owner)
+        '404':
+          description: Post not found
+
+  /posts/user/{userId}:
+    get:
+      summary: Get all posts created by a specific user
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: List of posts created by the user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  metadata:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      page:
+                        type: integer
+                      limit:
+                        type: integer
+                      posts:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Post'
+
+  /posts/{id}/upvote:
+    post:
+      summary: Upvote a post
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: Post ID to upvote
+      responses:
+        '200':
+          description: Post upvoted successfully or vote toggled/removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  metadata:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+
+  /posts/{id}/downvote:
+    post:
+      summary: Downvote a post
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            description: Post ID to downvote
+      responses:
+        '200':
+          description: Post downvoted successfully or vote toggled/removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  metadata:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Post:
+      type: object
+      properties:
+        post_id:
+          type: string
+        user_id:
+          type: string
+        title:
+          type: string
+        content:
+          type: string
+        thumbnail:
+          type: string
+        media_url:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        upvotes:
+          type: integer
+        downvotes:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time

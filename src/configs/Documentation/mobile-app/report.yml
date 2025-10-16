@@ -1,0 +1,196 @@
+openapi: 3.0.0
+info:
+  title: Report Service
+  version: 1.2.0
+  description: API endpoints for reporting users, posts, and comments.
+
+tags:
+  - name: Report
+    description: Endpoints for reporting and managing reports.
+
+paths:
+  /report:
+    post:
+      tags: [Report]
+      summary: Report a user, post, or comment
+      description: Submit a report for inappropriate content or behavior.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateReportRequest'
+      responses:
+        '201':
+          description: Report created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateReportResponse'
+
+    get:
+      tags: [Report]
+      summary: Get all reports
+      description: |
+        Retrieve reports.
+        - Normal users can see their own reports.
+        - Admins can filter reports by `target_type` and `status`.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: target_type
+          schema:
+            type: string
+            enum: [user, post, comment]
+          description: Filter by target type (admin only)
+        - in: query
+          name: status
+          schema:
+            type: string
+            enum: [pending, approved, dismissed]
+          description: Filter by report status (admin only)
+        - in: query
+          name: page
+          schema:
+            type: integer
+            example: 1
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Reports retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetReportsResponse'
+
+  /report/{id}:
+    patch:
+      tags: [Report]
+      summary: Approve or dismiss a report
+      description: Admin-only action to update the report status.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: The ID of the report to update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateReportRequest'
+      responses:
+        '200':
+          description: Report updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateReportResponse'
+        '404':
+          description: Report not found
+        '400':
+          description: Invalid action
+
+components:
+  schemas:
+    Report:
+      type: object
+      properties:
+        report_id:
+          type: string
+          example: 11111111-1111-1111-1111-111111111111
+        reporter_id:
+          type: string
+          example: 22222222-2222-2222-2222-222222222222
+        target_type:
+          type: string
+          enum: [user, post, comment]
+        target_id:
+          type: string
+        reason:
+          type: string
+        status:
+          type: string
+          enum: [pending, approved, dismissed]
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CreateReportRequest:
+      type: object
+      required: [target_type, target_id, reason]
+      properties:
+        target_type:
+          type: string
+          enum: [user, post, comment]
+          example: user
+        target_id:
+          type: string
+          example: 33333333-3333-3333-3333-333333333333
+        reason:
+          type: string
+          example: 'User is posting inappropriate content'
+
+    CreateReportResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Report submitted successfully'
+        metadata:
+          $ref: '#/components/schemas/Report'
+
+    GetReportsResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 35
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        reports:
+          type: array
+          items:
+            $ref: '#/components/schemas/Report'
+
+    UpdateReportRequest:
+      type: object
+      required: [action]
+      properties:
+        action:
+          type: string
+          enum: [approve, dismiss]
+          example: approve
+
+    UpdateReportResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: 'Report approved successfully'
+        metadata:
+          $ref: '#/components/schemas/Report'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
