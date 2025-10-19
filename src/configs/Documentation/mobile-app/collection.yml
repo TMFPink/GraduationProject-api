@@ -1,0 +1,253 @@
+openapi: 3.0.0
+info:
+  title: Collection Service
+  version: 1.2.0
+  description: API endpoints for managing card collections and their cards.
+
+tags:
+  - name: Collection
+    description: Manage user collections and the cards they contain.
+
+paths:
+  /collection:
+    post:
+      tags: [Collection]
+      summary: Create a new collection with cards
+      description: Create a new collection, optionally including a list of cards with quantities.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCollectionRequest'
+      responses:
+        '201':
+          description: Collection created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateCollectionResponse'
+
+    get:
+      tags: [Collection]
+      summary: Get all collections for the current user
+      description: Retrieve paginated list of all collections owned by the authenticated user.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            example: 1
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 10
+      responses:
+        '200':
+          description: Collections retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCollectionsResponse'
+
+  /collection/{id}:
+    get:
+      tags: [Collection]
+      summary: Get collection detail with cards
+      description: Retrieve a single collection with its domain and cards.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the collection to retrieve.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Collection detail retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCollectionResponse'
+
+    put:
+      tags: [Collection]
+      summary: Update collection name, domain, or cards
+      description: Replace or update collection details and the cards it contains.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the collection to update.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateCollectionRequest'
+      responses:
+        '200':
+          description: Collection updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateCollectionResponse'
+
+    delete:
+      tags: [Collection]
+      summary: Delete a collection
+      description: Permanently delete a collection and its cards.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The ID of the collection to delete.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Collection deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteCollectionResponse'
+
+components:
+  schemas:
+    # ---------- Core Models ----------
+    Collection:
+      type: object
+      properties:
+        collection_id:
+          type: string
+          example: 11111111-1111-1111-1111-111111111111
+        user_id:
+          type: string
+          example: 22222222-2222-2222-2222-222222222222
+        name:
+          type: string
+          example: Fire Collection
+        card_domain_id:
+          type: string
+          example: 33333333-3333-3333-3333-333333333333
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    CollectionCard:
+      type: object
+      properties:
+        card_id:
+          type: string
+          example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+        quantity:
+          type: integer
+          example: 2
+      required: [card_id]
+
+    # ---------- Requests ----------
+    CreateCollectionRequest:
+      type: object
+      required: [name, card_domain_id]
+      properties:
+        name:
+          type: string
+          example: Fire Collection
+        card_domain_id:
+          type: string
+          example: 33333333-3333-3333-3333-333333333333
+        cards:
+          type: array
+          description: List of card IDs and their quantities to include in the new collection.
+          items:
+            $ref: '#/components/schemas/CollectionCard'
+
+    UpdateCollectionRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          example: Updated Collection
+        card_domain_id:
+          type: string
+          example: 33333333-3333-3333-3333-333333333333
+        cards:
+          type: array
+          description: Full replacement list of cards for this collection.
+          items:
+            $ref: '#/components/schemas/CollectionCard'
+
+    # ---------- Responses ----------
+    CreateCollectionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collection created successfully
+        metadata:
+          $ref: '#/components/schemas/Collection'
+
+    UpdateCollectionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collection updated successfully
+        metadata:
+          $ref: '#/components/schemas/Collection'
+
+    GetCollectionsResponse:
+      type: object
+      properties:
+        total:
+          type: integer
+          example: 5
+        page:
+          type: integer
+          example: 1
+        limit:
+          type: integer
+          example: 10
+        collections:
+          type: array
+          items:
+            $ref: '#/components/schemas/Collection'
+
+    GetCollectionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collection retrieved successfully
+        metadata:
+          $ref: '#/components/schemas/Collection'
+
+    DeleteCollectionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collection deleted successfully
+
+  # ---------- Security ----------
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

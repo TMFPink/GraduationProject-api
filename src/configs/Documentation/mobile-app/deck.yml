@@ -1,0 +1,188 @@
+openapi: 3.0.0
+info:
+  title: Deck Service
+  version: 1.1.0
+  description: API endpoints for managing decks and their cards.
+
+tags:
+  - name: Deck
+    description: Manage user decks and the cards inside them.
+
+paths:
+  /deck:
+    post:
+      tags: [Deck]
+      summary: Create a new deck with cards
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDeckRequest'
+      responses:
+        '201':
+          description: Deck created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateDeckResponse'
+
+    get:
+      tags: [Deck]
+      summary: Get all decks of current user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, example: 1 }
+        - name: limit
+          in: query
+          schema: { type: integer, example: 10 }
+      responses:
+        '200':
+          description: Decks retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDecksResponse'
+
+  /deck/{id}:
+    get:
+      tags: [Deck]
+      summary: Get deck details with cards
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deck detail retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetDeckResponse'
+
+    put:
+      tags: [Deck]
+      summary: Update deck name, format, or cards
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDeckRequest'
+      responses:
+        '200':
+          description: Deck updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateDeckResponse'
+
+    delete:
+      tags: [Deck]
+      summary: Delete a deck
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: Deck deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DeleteDeckResponse'
+
+components:
+  schemas:
+    Deck:
+      type: object
+      properties:
+        deck_id: { type: string, example: 11111111-1111-1111-1111-111111111111 }
+        user_id: { type: string, example: 22222222-2222-2222-2222-222222222222 }
+        name: { type: string, example: 'My Deck' }
+        card_domain_id:
+          { type: string, example: 33333333-3333-3333-3333-333333333333 }
+        format: { type: string, example: 'standard' }
+        createdAt: { type: string, format: date-time }
+
+    DeckCard:
+      type: object
+      properties:
+        card_id:
+          { type: string, example: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' }
+        quantity: { type: integer, example: 2 }
+
+    CreateDeckRequest:
+      type: object
+      required: [name, card_domain_id]
+      properties:
+        name: { type: string, example: 'My Fire Deck' }
+        card_domain_id: { type: string }
+        format: { type: string, example: 'standard' }
+        cards:
+          type: array
+          description: List of card IDs and quantities
+          items:
+            $ref: '#/components/schemas/DeckCard'
+
+    UpdateDeckRequest:
+      type: object
+      properties:
+        name: { type: string, example: 'Updated Deck' }
+        format: { type: string, example: 'classic' }
+        cards:
+          type: array
+          items:
+            $ref: '#/components/schemas/DeckCard'
+
+    CreateDeckResponse:
+      type: object
+      properties:
+        message: { type: string, example: 'Deck created successfully' }
+        metadata: { $ref: '#/components/schemas/Deck' }
+
+    UpdateDeckResponse:
+      type: object
+      properties:
+        message: { type: string, example: 'Deck updated successfully' }
+        metadata: { $ref: '#/components/schemas/Deck' }
+
+    GetDecksResponse:
+      type: object
+      properties:
+        total: { type: integer, example: 3 }
+        page: { type: integer, example: 1 }
+        limit: { type: integer, example: 10 }
+        decks:
+          type: array
+          items: { $ref: '#/components/schemas/Deck' }
+
+    GetDeckResponse:
+      type: object
+      properties:
+        message: { type: string, example: 'Deck retrieved successfully' }
+        metadata: { $ref: '#/components/schemas/Deck' }
+
+    DeleteDeckResponse:
+      type: object
+      properties:
+        message: { type: string, example: 'Deck deleted successfully' }
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
