@@ -4,6 +4,21 @@ const { OK, CREATED } = require('../core/success.response');
 const CollectionService = require('../services/collection.service');
 
 class CollectionController {
+  addCardToCollection = async (req, res, next) => {
+    const user_id = req.user.user_id;
+    const { id } = req.params; // collection_id
+    const { card_id } = req.body;
+
+    new OK({
+      message: 'Card added to collection successfully',
+      metadata: await CollectionService.addCardToCollection(
+        id,
+        user_id,
+        card_id
+      ),
+    }).send(res);
+  };
+
   createCollection = async (req, res, next) => {
     const user_id = req.user.user_id;
     const { name, card_domain_id, cards } = req.body;

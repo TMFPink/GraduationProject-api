@@ -89,7 +89,12 @@ class DeckService {
         { model: db.CardDomain, as: 'domain' },
         {
           model: db.DeckCard,
-          include: [{ model: db.Card }],
+          include: [
+            {
+              model: db.Card,
+              attributes: ['name', 'rarity', 'image_normal_url'],
+            },
+          ],
         },
       ],
     });

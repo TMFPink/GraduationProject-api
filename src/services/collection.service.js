@@ -6,15 +6,45 @@ const { BadRequestError, NotFoundError } = require('../core/error.response');
 
 class CollectionService {
   /**
+   * Add one card to an existing collection
+   */
+  static addCardToCollection = async (collection_id, user_id, card_id) => {
+    // Check if collection exists and belongs to the user
+    const collection = await db.Collection.findOne({
+      where: { collection_id, user_id },
+    });
+    if (!collection)
+      throw new NotFoundError('Collection not found or unauthorized');
+
+    // Check if card already exists in collection
+    const existing = await db.CollectionCard.findOne({
+      where: { collection_id, card_id },
+    });
+    if (existing)
+      throw new BadRequestError('Card already exists in this collection');
+
+    // Create the link
+    const newCollectionCard = await db.CollectionCard.create({
+      collection_card_id: generateUUID(),
+      collection_id,
+      card_id,
+    });
+
+    return {
+      message: 'Card added to collection successfully',
+      card: newCollectionCard,
+    };
+  };
+
+  /**
    * Create a new collection with cards
    */
   static createCollection = async (
     user_id,
     { name, card_domain_id, cards = [] }
   ) => {
-    if (!name) throw new BadRequestError('Collection name is required');
-    if (!card_domain_id)
-      throw new BadRequestError('Card domain ID is required');
+    if (!name || !card_domain_id)
+      throw new BadRequestError('Collection name and domain are required');
 
     const collection = await db.Collection.create({
       collection_id: generateUUID(),
@@ -23,13 +53,12 @@ class CollectionService {
       card_domain_id,
     });
 
-    // Add cards to collection
+    // Add cards if provided
     if (Array.isArray(cards) && cards.length > 0) {
-      const collectionCards = cards.map(({ card_id, quantity = 1 }) => ({
+      const collectionCards = cards.map((card_id) => ({
         collection_card_id: generateUUID(),
         collection_id: collection.collection_id,
         card_id,
-        quantity,
       }));
       await db.CollectionCard.bulkCreate(collectionCards);
     }
@@ -38,7 +67,7 @@ class CollectionService {
   };
 
   /**
-   * Update collection name or its cards
+   * Update collection name, domain, or cards
    */
   static updateCollection = async (
     collection_id,
@@ -59,13 +88,12 @@ class CollectionService {
     if (Array.isArray(cards)) {
       await db.CollectionCard.destroy({ where: { collection_id } });
       if (cards.length > 0) {
-        const collectionCards = cards.map(({ card_id, quantity = 1 }) => ({
+        const newCards = cards.map((card_id) => ({
           collection_card_id: generateUUID(),
           collection_id,
           card_id,
-          quantity,
         }));
-        await db.CollectionCard.bulkCreate(collectionCards);
+        await db.CollectionCard.bulkCreate(newCards);
       }
     }
 
@@ -79,6 +107,7 @@ class CollectionService {
     const offset = (page - 1) * limit;
     const { count, rows } = await db.Collection.findAndCountAll({
       where: { user_id },
+      include: [{ model: db.CardDomain }],
       limit,
       offset,
       order: [['createdAt', 'DESC']],
@@ -87,17 +116,20 @@ class CollectionService {
   };
 
   /**
-   * Get a single collection with cards
+   * Get one collection with its cards
    */
   static getCollectionDetail = async (collection_id) => {
     const collection = await db.Collection.findByPk(collection_id, {
       include: [
-        {
-          model: db.CardDomain,
-        },
+        { model: db.CardDomain },
         {
           model: db.CollectionCard,
-          include: [{ model: db.Card }],
+          include: [
+            {
+              model: db.Card,
+              attributes: ['name', 'rarity', 'image_normal_url'],
+            },
+          ],
         },
       ],
     });
@@ -106,7 +138,7 @@ class CollectionService {
   };
 
   /**
-   * Delete a collection and its cards
+   * Delete a collection
    */
   static deleteCollection = async (collection_id, user_id) => {
     const collection = await db.Collection.findOne({
@@ -114,8 +146,10 @@ class CollectionService {
     });
     if (!collection)
       throw new NotFoundError('Collection not found or unauthorized');
+
     await db.CollectionCard.destroy({ where: { collection_id } });
     await collection.destroy();
+
     return { message: 'Collection deleted successfully' };
   };
 }
