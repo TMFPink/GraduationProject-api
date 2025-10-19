@@ -121,7 +121,7 @@ class UserService {
 
   static get_basic_infor = async (user_id) => {
     //Username
-    const { first_name, last_name } = await db.User.findOne({
+    const { first_name, last_name, email } = await db.User.findOne({
       where: { user_id },
     });
 
@@ -130,6 +130,8 @@ class UserService {
 
     return {
       name: first_name + ' ' + last_name,
+      email,
+      user_id,
     };
   };
 

@@ -82,7 +82,7 @@ class ChatService {
           { sender_id: receiver_id, receiver_id: user_id },
         ],
       },
-      order: [['createdAt', 'ASC']],
+      order: [['createdAt', 'DESC']],
       offset,
       limit,
     });
