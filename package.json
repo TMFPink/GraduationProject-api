@@ -11,7 +11,11 @@
     "migrate:auto-generate": "npx sequelize-mig migration:make -n",
     "migrate:up": "npx sequelize-cli db:migrate",
     "migrate:undo": "npx sequelize-cli db:migrate:undo",
-    "migrate:undo:all": "npx sequelize-cli db:migrate:undo:all"
+    "migrate:undo:all": "npx sequelize-cli db:migrate:undo:all",
+    "script:insert-ygo-cards": "node src/script/insertYGOCards.js",
+    "script:insert-pokemon-cards": "node src/script/insertPokemonCards.js",
+    "script:sync-ygo-cards": "node src/script/syncYGOCards.js",
+    "script:sync-pokemon-cards": "node src/script/syncPokemonCards.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.901.0",

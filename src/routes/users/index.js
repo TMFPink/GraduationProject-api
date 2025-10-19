@@ -11,17 +11,16 @@ const reportRouter = require('./report');
 const postsRouter = require('./posts');
 const commentsRouter = require('./comment');
 const messageRouter = require('./chat');
-
+const collectionRouter = require('./collection');
+const deckRouter = require('./deck');
 
 const users_api = express();
-
 
 users_api.use(
   '/api-docs',
   swaggerUi.serveFiles(appSpecification),
   swaggerUi.setup(appSpecification)
 );
-
 
 users_api.use('/users', userRouter);
 users_api.use('/cards', cardsRouter);
@@ -30,6 +29,7 @@ users_api.use('/report', reportRouter);
 users_api.use('/posts', postsRouter);
 users_api.use('/comments', commentsRouter);
 users_api.use('/chat', messageRouter);
-
+users_api.use('/collection', collectionRouter);
+users_api.use('/deck', deckRouter);
 
 module.exports = users_api;
