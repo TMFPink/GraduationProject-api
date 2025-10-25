@@ -120,8 +120,9 @@ async function main() {
         imageRows.push({
           card_image_id: uuidv4(),
           card_id: cardId,
-          image_url: `${BASE_URL}/low_resolution/${img.id}.jpg`,
-          image_url_small: `${BASE_URL}/original/${img.id}.jpg`,
+          source_image_id: img.id,
+          image_url: `${BASE_URL}/original/${img.id}.jpg`,
+          image_url_small: `${BASE_URL}/low_resolution/${img.id}.jpg`,
           image_url_cropped: `${BASE_URL}/cropped/${img.id}.jpg`,
           is_default: index === 0,
           meta_data: JSON.stringify(null),

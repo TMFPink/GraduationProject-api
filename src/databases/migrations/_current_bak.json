@@ -124,6 +124,10 @@
                     "onUpdate": "CASCADE",
                     "seqType": "Sequelize.UUID"
                 },
+                "source_image_id": {
+                    "field": "source_image_id",
+                    "seqType": "Sequelize.STRING"
+                },
                 "image_url": {
                     "field": "image_url",
                     "seqType": "Sequelize.STRING"
@@ -176,7 +180,7 @@
                         "model": "cards",
                         "key": "card_id"
                     },
-                    "onDelete": "NO ACTION",
+                    "onDelete": "CASCADE",
                     "onUpdate": "CASCADE",
                     "seqType": "Sequelize.UUID"
                 }
@@ -206,6 +210,17 @@
                     "allowNull": false,
                     "field": "name",
                     "seqType": "Sequelize.STRING"
+                },
+                "card_domain_id": {
+                    "allowNull": false,
+                    "field": "card_domain_id",
+                    "references": {
+                        "model": "card_domains",
+                        "key": "card_domain_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
                 },
                 "createdAt": {
                     "allowNull": false,
@@ -405,7 +420,7 @@
                         "model": "card_domains",
                         "key": "card_domain_id"
                     },
-                    "onDelete": "NO ACTION",
+                    "onDelete": "CASCADE",
                     "onUpdate": "CASCADE",
                     "seqType": "Sequelize.UUID"
                 },
@@ -900,5 +915,5 @@
     "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
     "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
     "exists": true,
-    "revision": 8
+    "revision": 10
 }

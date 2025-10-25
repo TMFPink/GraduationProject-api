@@ -137,6 +137,7 @@ async function main() {
         imageRows.push({
           card_image_id: uuidv4(),
           card_id: cardId,
+          source_image_id: card.id,
           image_url: defaultOriginal,
           image_url_small: defaultLowRes,
           image_url_cropped: defaultLowRes,
