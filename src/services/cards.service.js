@@ -125,12 +125,22 @@ class CardService {
       distinct: true,
     });
 
+    // Remove "sets" key from meta_data in each card
+    const cardsWithFilteredMeta = rows.map((card) => {
+      const cardData = card.toJSON();
+      if (cardData.meta_data && cardData.meta_data.sets) {
+        const { sets, ...filteredMetaData } = cardData.meta_data;
+        cardData.meta_data = filteredMetaData;
+      }
+      return cardData;
+    });
+
     return {
       total: count,
       page: Number(page),
       limit: Number(limit),
-      filters: filters,
-      cards: rows,
+      filters: { ...filters },
+      cards: cardsWithFilteredMeta,
     };
   };
 }

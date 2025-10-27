@@ -1,50 +1,19 @@
 openapi: 3.0.0
 info:
   title: Collection Service
-  version: 1.3.0
-  description: API endpoints for managing user collections and their cards (no quantity field).
+  version: 1.3.1
+  description: API endpoints for managing user collections and the cards they contain.
 
 tags:
   - name: Collection
-    description: Manage user collections and the cards they contain.
+    description: Manage user collections and their associated cards.
 
 paths:
-  /collection/{id}/card:
+  /collections:
     post:
       tags: [Collection]
-      summary: Add a single card to a collection
-      description: Add one card directly to an existing collection by its ID.
-      security:
-        - bearerAuth: []
-      parameters:
-        - name: id
-          in: path
-          required: true
-          description: ID of the collection to which the card will be added
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/AddCardToCollectionRequest'
-      responses:
-        '200':
-          description: Card added successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddCardToCollectionResponse'
-        '400':
-          description: Card already exists in collection
-        '404':
-          description: Collection not found
-  /collection:
-    post:
-      tags: [Collection]
-      summary: Create a new collection with cards
-      description: Create a new collection, optionally including a list of card IDs.
+      summary: Create a new collection with optional cards
+      description: Create a new collection for the authenticated user, optionally including a list of card IDs.
       security:
         - bearerAuth: []
       requestBody:
@@ -60,11 +29,15 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateCollectionResponse'
+        '400':
+          description: Invalid input (missing name or card_type)
+        '401':
+          description: Unauthorized user
 
     get:
       tags: [Collection]
-      summary: Get all collections for the current user
-      description: Retrieve a paginated list of all collections owned by the authenticated user.
+      summary: Get all user collections
+      description: Retrieve all collections belonging to the authenticated user, paginated.
       security:
         - bearerAuth: []
       parameters:
@@ -73,11 +46,13 @@ paths:
           schema:
             type: integer
             example: 1
+          description: Page number
         - name: limit
           in: query
           schema:
             type: integer
-            example: 10
+            example: 20
+          description: Number of collections per page
       responses:
         '200':
           description: Collections retrieved successfully
@@ -86,41 +61,42 @@ paths:
               schema:
                 $ref: '#/components/schemas/GetCollectionsResponse'
 
-  /collection/{id}:
+  /collections/{collection_id}:
     get:
       tags: [Collection]
       summary: Get collection detail with cards
-      description: Retrieve a single collection with its domain and cards.
+      description: Retrieve a collection by its ID, including domain and all cards in it.
       security:
         - bearerAuth: []
       parameters:
-        - name: id
+        - name: collection_id
           in: path
           required: true
-          description: The ID of the collection to retrieve.
           schema:
             type: string
+          description: The ID of the collection to retrieve
       responses:
         '200':
-          description: Collection detail retrieved successfully
+          description: Collection retrieved successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetCollectionResponse'
+        '404':
+          description: Collection not found or unauthorized
 
     put:
       tags: [Collection]
-      summary: Update collection name, domain, or cards
-      description: Replace or update collection details and its list of cards.
+      summary: Update collection name or cards
+      description: Update the name of a collection or replace its list of cards entirely.
       security:
         - bearerAuth: []
       parameters:
-        - name: id
+        - name: collection_id
           in: path
           required: true
           schema:
             type: string
-          description: The ID of the collection to update.
       requestBody:
         required: true
         content:
@@ -134,18 +110,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateCollectionResponse'
+        '404':
+          description: Collection not found or unauthorized
 
     delete:
       tags: [Collection]
       summary: Delete a collection
-      description: Permanently delete a collection and its associated cards.
+      description: Permanently delete a collection and all its associated cards.
       security:
         - bearerAuth: []
       parameters:
-        - name: id
+        - name: collection_id
           in: path
           required: true
-          description: The ID of the collection to delete.
           schema:
             type: string
       responses:
@@ -155,6 +132,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeleteCollectionResponse'
+        '404':
+          description: Collection not found or unauthorized
+
+  /collections/{collection_id}/cards:
+    post:
+      tags: [Collection]
+      summary: Add a card to an existing collection
+      description: Add one specific card to an existing user collection.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: collection_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Collection ID to which the card will be added
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddCardToCollectionRequest'
+      responses:
+        '200':
+          description: Card added successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddCardToCollectionResponse'
+        '400':
+          description: Card already exists in this collection
+        '404':
+          description: Collection not found or unauthorized
 
 components:
   schemas:
@@ -171,30 +182,50 @@ components:
         name:
           type: string
           example: Fire Collection
-        card_domain_id:
+        card_type:
           type: string
-          example: 33333333-3333-3333-3333-333333333333
+          example: ygo
         createdAt:
           type: string
           format: date-time
         updatedAt:
           type: string
           format: date-time
+        domain:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+              example: Yu-Gi-Oh!
+        cards:
+          type: array
+          items:
+            type: object
+            properties:
+              card_id:
+                type: string
+              name:
+                type: string
+              rarity:
+                type: string
+              image_normal_url:
+                type: string
 
     # ---------- Requests ----------
     CreateCollectionRequest:
       type: object
-      required: [name, card_domain_id]
+      required: [name, card_type]
       properties:
         name:
           type: string
-          example: Fire Collection
-        card_domain_id:
+          example: Fire Deck
+        card_type:
           type: string
-          example: 33333333-3333-3333-3333-333333333333
+          enum: [ygo, pkm]
+          example: ygo
         cards:
           type: array
-          description: List of card IDs to include in this collection.
           items:
             type: string
             example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
@@ -204,16 +235,20 @@ components:
       properties:
         name:
           type: string
-          example: Updated Fire Collection
-        card_domain_id:
-          type: string
-          example: 33333333-3333-3333-3333-333333333333
+          example: Updated Fire Deck
         cards:
           type: array
-          description: Replace the existing list of card IDs in this collection.
           items:
             type: string
             example: ffffffff-1111-2222-3333-444444444444
+
+    AddCardToCollectionRequest:
+      type: object
+      required: [card_id]
+      properties:
+        card_id:
+          type: string
+          example: bbbbbbbb-cccc-dddd-eeee-ffffffffffff
 
     # ---------- Responses ----------
     CreateCollectionResponse:
@@ -223,7 +258,10 @@ components:
           type: string
           example: Collection created successfully
         metadata:
-          $ref: '#/components/schemas/Collection'
+          type: object
+          properties:
+            collection:
+              $ref: '#/components/schemas/Collection'
 
     UpdateCollectionResponse:
       type: object
@@ -232,47 +270,10 @@ components:
           type: string
           example: Collection updated successfully
         metadata:
-          $ref: '#/components/schemas/Collection'
-
-    GetCollectionsResponse:
-      type: object
-      properties:
-        total:
-          type: integer
-          example: 5
-        page:
-          type: integer
-          example: 1
-        limit:
-          type: integer
-          example: 10
-        collections:
-          type: array
-          items:
-            $ref: '#/components/schemas/Collection'
-
-    GetCollectionResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Collection retrieved successfully
-        metadata:
-          $ref: '#/components/schemas/Collection'
-
-    DeleteCollectionResponse:
-      type: object
-      properties:
-        message:
-          type: string
-          example: Collection deleted successfully
-    AddCardToCollectionRequest:
-      type: object
-      required: [card_id]
-      properties:
-        card_id:
-          type: string
-          example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+          type: object
+          properties:
+            collection:
+              $ref: '#/components/schemas/Collection'
 
     AddCardToCollectionResponse:
       type: object
@@ -292,6 +293,48 @@ components:
             card_id:
               type: string
               example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+
+    GetCollectionsResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collections retrieved successfully
+        metadata:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 5
+            page:
+              type: integer
+              example: 1
+            limit:
+              type: integer
+              example: 20
+            collections:
+              type: array
+              items:
+                $ref: '#/components/schemas/Collection'
+
+    GetCollectionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collection retrieved successfully
+        metadata:
+          type: object
+          properties:
+            collection:
+              $ref: '#/components/schemas/Collection'
+
+    DeleteCollectionResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Collection deleted successfully
 
   # ---------- Security ----------
   securitySchemes:
