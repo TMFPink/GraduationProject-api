@@ -41,10 +41,22 @@ class CollectionService {
    */
   static createCollection = async (
     user_id,
-    { name, card_domain_id, cards = [] }
+    { name, card_type, cards = [] }
   ) => {
-    if (!name || !card_domain_id)
-      throw new BadRequestError('Collection name and domain are required');
+    if (!name || !card_type)
+      throw new BadRequestError('Collection name and card type are required');
+
+    let card_domain_id;
+    switch (card_type) {
+      case 'ygo':
+        card_domain_id = '11111111-1111-1111-1111-111111111111';
+        break;
+      case 'pkm':
+        card_domain_id = '22222222-2222-2222-2222-222222222222';
+        break;
+      default:
+        throw new BadRequestError('Invalid card type');
+    }
 
     const collection = await db.Collection.create({
       collection_id: generateUUID(),
@@ -69,11 +81,7 @@ class CollectionService {
   /**
    * Update collection name, domain, or cards
    */
-  static updateCollection = async (
-    collection_id,
-    user_id,
-    { name, card_domain_id, cards }
-  ) => {
+  static updateCollection = async (collection_id, user_id, { name, cards }) => {
     const collection = await db.Collection.findOne({
       where: { collection_id, user_id },
     });
@@ -81,7 +89,6 @@ class CollectionService {
       throw new NotFoundError('Collection not found or unauthorized');
 
     if (name) collection.name = name;
-    if (card_domain_id) collection.card_domain_id = card_domain_id;
     await collection.save();
 
     // Replace cards if provided
@@ -118,12 +125,14 @@ class CollectionService {
   /**
    * Get one collection with its cards
    */
-  static getCollectionDetail = async (collection_id) => {
-    const collection = await db.Collection.findByPk(collection_id, {
+  static getCollectionDetail = async (collection_id, user_id) => {
+    const collection = await db.Collection.findOne({
+      where: { collection_id, user_id },
       include: [
-        { model: db.CardDomain },
+        { model: db.CardDomain, as: 'domain' },
         {
           model: db.CollectionCard,
+          as: 'cards',
           include: [
             {
               model: db.Card,
@@ -133,8 +142,11 @@ class CollectionService {
         },
       ],
     });
-    if (!collection) throw new NotFoundError('Collection not found');
-    return collection;
+
+    if (!collection)
+      throw new NotFoundError('Collection not found or unauthorized');
+
+    return { message: 'Collection retrieved successfully', collection };
   };
 
   /**

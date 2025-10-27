@@ -28,6 +28,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreateDeckResponse'
+        '400':
+          description: Bad request - Invalid card type or format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     get:
       tags: [Deck]
@@ -37,10 +43,10 @@ paths:
       parameters:
         - name: page
           in: query
-          schema: { type: integer, example: 1 }
+          schema: { type: integer, example: 1, default: 1 }
         - name: limit
           in: query
-          schema: { type: integer, example: 10 }
+          schema: { type: integer, example: 20, default: 20 }
       responses:
         '200':
           description: Decks retrieved successfully
@@ -67,12 +73,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/GetDeckResponse'
+        '404':
+          description: Deck not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     put:
       tags: [Deck]
       summary: Update deck name, format, or cards
       security:
         - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
       requestBody:
         required: true
         content:
@@ -86,6 +103,18 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdateDeckResponse'
+        '400':
+          description: Bad request - Invalid format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Deck not found or unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
     delete:
       tags: [Deck]
@@ -104,18 +133,25 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/DeleteDeckResponse'
+        '404':
+          description: Deck not found or unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
 components:
   schemas:
     Deck:
       type: object
       properties:
-        deck_id: { type: string, example: 11111111-1111-1111-1111-111111111111 }
-        user_id: { type: string, example: 22222222-2222-2222-2222-222222222222 }
-        name: { type: string, example: 'My Deck' }
-        card_domain_id:
-          { type: string, example: 33333333-3333-3333-3333-333333333333 }
-        format: { type: string, example: 'standard' }
+        deck_id:
+          { type: string, example: '11111111-1111-1111-1111-111111111111' }
+        user_id:
+          { type: string, example: '22222222-2222-2222-2222-222222222222' }
+        name: { type: string, example: 'My Fire Deck' }
+        card_type: { type: string, example: 'ygo' }
+        format: { type: string, example: 'TCG', nullable: true }
         createdAt: { type: string, format: date-time }
 
     DeckCard:
@@ -123,28 +159,41 @@ components:
       properties:
         card_id:
           { type: string, example: 'aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee' }
-        quantity: { type: integer, example: 2 }
+        quantity: { type: integer, example: 2, default: 1 }
 
     CreateDeckRequest:
       type: object
-      required: [name, card_domain_id]
+      required: [name, card_type]
       properties:
         name: { type: string, example: 'My Fire Deck' }
-        card_domain_id: { type: string }
-        format: { type: string, example: 'standard' }
+        card_type:
+          type: string
+          enum: [ygo, pkm]
+          example: 'ygo'
+          description: "Card type - 'ygo' for Yu-Gi-Oh!, 'pkm' for Pokemon"
+        format:
+          type: string
+          example: 'TCG'
+          description: 'Optional format - For ygo: TCG, OCG, Genesys. For pkm: Standard, Expanded, Legacy, Unlimited'
         cards:
           type: array
-          description: List of card IDs and quantities
+          description: 'List of card IDs and quantities'
           items:
             $ref: '#/components/schemas/DeckCard'
+          default: []
 
     UpdateDeckRequest:
       type: object
       properties:
-        name: { type: string, example: 'Updated Deck' }
-        format: { type: string, example: 'classic' }
+        name: { type: string, example: 'Updated Deck Name' }
+        format:
+          type: string
+          example: 'OCG'
+          nullable: true
+          description: "Format for the deck - must be valid for the deck's card type"
         cards:
           type: array
+          description: 'Complete replacement of deck cards'
           items:
             $ref: '#/components/schemas/DeckCard'
 
@@ -152,20 +201,20 @@ components:
       type: object
       properties:
         message: { type: string, example: 'Deck created successfully' }
-        metadata: { $ref: '#/components/schemas/Deck' }
+        deck: { $ref: '#/components/schemas/Deck' }
 
     UpdateDeckResponse:
       type: object
       properties:
         message: { type: string, example: 'Deck updated successfully' }
-        metadata: { $ref: '#/components/schemas/Deck' }
+        deck: { $ref: '#/components/schemas/Deck' }
 
     GetDecksResponse:
       type: object
       properties:
         total: { type: integer, example: 3 }
         page: { type: integer, example: 1 }
-        limit: { type: integer, example: 10 }
+        limit: { type: integer, example: 20 }
         decks:
           type: array
           items: { $ref: '#/components/schemas/Deck' }
@@ -174,12 +223,18 @@ components:
       type: object
       properties:
         message: { type: string, example: 'Deck retrieved successfully' }
-        metadata: { $ref: '#/components/schemas/Deck' }
+        deck: { $ref: '#/components/schemas/Deck' }
 
     DeleteDeckResponse:
       type: object
       properties:
         message: { type: string, example: 'Deck deleted successfully' }
+
+    ErrorResponse:
+      type: object
+      properties:
+        message: { type: string, example: 'Invalid card type' }
+        error: { type: string, example: 'BadRequestError' }
 
   securitySchemes:
     bearerAuth:

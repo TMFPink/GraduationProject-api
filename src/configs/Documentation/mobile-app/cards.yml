@@ -131,6 +131,11 @@ paths:
           style: form
           explode: true
           description: 'Dynamic meta filters, e.g. ?attribute=Dark&race=Dragon&archetype=Blue-Eyes'
+          example:
+            attribute: 'LIGHT'
+            race: 'Pyro'
+            archetype: 'Ryzeal'
+            type: 'Effect Monster'
       responses:
         '200':
           description: Filtered list of cards based on meta_data
@@ -255,17 +260,6 @@ components:
         archetype:
           type: string
           example: Dark Magician
-        sets:
-          type: array
-          items:
-            type: object
-            properties:
-              set_name:
-                type: string
-                example: Legend of Blue Eyes White Dragon
-              set_rarity:
-                type: string
-                example: Ultra Rare
 
     # ----------------------------
     # Pokémon Metadata Model

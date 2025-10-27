@@ -5,22 +5,60 @@ const { generateUUID } = require('../helpers/helpers');
 const { BadRequestError, NotFoundError } = require('../core/error.response');
 
 class DeckService {
+  // Standard format options for each card type
+  static STANDARD_FORMATS = {
+    ygo: ['TCG', 'OCG', 'Genesys'],
+    pkm: ['Standard', 'Expanded', 'Legacy', 'Unlimited'],
+  };
+
+  static getAvailableFormats = (card_type) => {
+    return this.STANDARD_FORMATS[card_type] || [];
+  };
+
+  static validateFormat = (card_type, format) => {
+    if (!format) return true; // Format is optional
+    const availableFormats = this.STANDARD_FORMATS[card_type];
+    return availableFormats && availableFormats.includes(format);
+  };
+
   /**
    * Create a new deck with cards
    */
   static createDeck = async (
     user_id,
-    { name, card_domain_id, format, cards = [] }
+    { name, card_type, format, cards = [] }
   ) => {
-    if (!name || !card_domain_id)
-      throw new BadRequestError('Deck name and domain are required');
+    if (!name || !card_type)
+      throw new BadRequestError('Deck name and card type are required');
+
+    // Validate format if provided
+    if (format && !this.validateFormat(card_type, format)) {
+      const availableFormats = this.getAvailableFormats(card_type);
+      throw new BadRequestError(
+        `Invalid format. Available formats for ${card_type}: ${availableFormats.join(
+          ', '
+        )}`
+      );
+    }
+
+    let card_domain_id;
+    switch (card_type) {
+      case 'ygo':
+        card_domain_id = '11111111-1111-1111-1111-111111111111';
+        break;
+      case 'pkm':
+        card_domain_id = '22222222-2222-2222-2222-222222222222';
+        break;
+      default:
+        throw new BadRequestError('Invalid card type');
+    }
 
     const deck = await db.Deck.create({
       deck_id: generateUUID(),
       user_id,
       name,
       card_domain_id,
-      format,
+      format, // Can be null/undefined
     });
 
     // Add deck cards
@@ -44,8 +82,37 @@ class DeckService {
     const deck = await db.Deck.findOne({ where: { deck_id, user_id } });
     if (!deck) throw new NotFoundError('Deck not found or unauthorized');
 
+    // Get card type from deck's domain to validate format
+    if (format) {
+      const deckWithDomain = await db.Deck.findByPk(deck_id, {
+        include: [{ model: db.CardDomain, as: 'domain' }],
+      });
+
+      let card_type;
+      if (
+        deckWithDomain.domain.card_domain_id ===
+        '11111111-1111-1111-1111-111111111111'
+      ) {
+        card_type = 'ygo';
+      } else if (
+        deckWithDomain.domain.card_domain_id ===
+        '22222222-2222-2222-2222-222222222222'
+      ) {
+        card_type = 'pkm';
+      }
+
+      if (!this.validateFormat(card_type, format)) {
+        const availableFormats = this.getAvailableFormats(card_type);
+        throw new BadRequestError(
+          `Invalid format. Available formats for ${card_type}: ${availableFormats.join(
+            ', '
+          )}`
+        );
+      }
+    }
+
     if (name) deck.name = name;
-    if (format) deck.format = format;
+    if (format !== undefined) deck.format = format; // Allow setting to null
     await deck.save();
 
     // Replace deck cards
@@ -72,44 +139,50 @@ class DeckService {
     const offset = (page - 1) * limit;
     const { count, rows } = await db.Deck.findAndCountAll({
       where: { user_id },
-      include: [{ model: db.CardDomain, as: 'domain' }],
-      limit,
-      offset,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
       order: [['createdAt', 'DESC']],
+      include: [{ model: db.CardDomain, as: 'domain' }],
     });
-    return { total: count, page, limit, decks: rows };
+
+    return {
+      total: count,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      decks: rows,
+    };
   };
 
   /**
-   * Get deck detail with cards
+   * Get a single deck with its cards
    */
-  static getDeckDetail = async (deck_id) => {
-    const deck = await db.Deck.findByPk(deck_id, {
+  static getDeck = async (deck_id, user_id) => {
+    const deck = await db.Deck.findOne({
+      where: { deck_id, user_id },
       include: [
         { model: db.CardDomain, as: 'domain' },
-        {
-          model: db.DeckCard,
-          include: [
-            {
-              model: db.Card,
-              attributes: ['name', 'rarity', 'image_normal_url'],
-            },
-          ],
-        },
+        { model: db.DeckCard, as: 'cards' },
       ],
     });
-    if (!deck) throw new NotFoundError('Deck not found');
-    return deck;
+
+    if (!deck) throw new NotFoundError('Deck not found or unauthorized');
+
+    return { message: 'Deck retrieved successfully', deck };
   };
 
   /**
-   * Delete deck and its cards
+   * Delete a deck
    */
   static deleteDeck = async (deck_id, user_id) => {
     const deck = await db.Deck.findOne({ where: { deck_id, user_id } });
     if (!deck) throw new NotFoundError('Deck not found or unauthorized');
+
+    // Delete associated deck cards first
     await db.DeckCard.destroy({ where: { deck_id } });
+
+    // Delete the deck
     await deck.destroy();
+
     return { message: 'Deck deleted successfully' };
   };
 }
