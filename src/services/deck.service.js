@@ -156,12 +156,15 @@ class DeckService {
   /**
    * Get a single deck with its cards
    */
-  static getDeck = async (deck_id, user_id) => {
+  static getDeckDetail = async (deck_id, user_id) => {
     const deck = await db.Deck.findOne({
       where: { deck_id, user_id },
       include: [
-        { model: db.CardDomain, as: 'domain' },
-        { model: db.DeckCard, as: 'cards' },
+        {
+          model: db.DeckCard,
+          as: 'cards',
+          attributes: ['card_id', 'quantity'],
+        },
       ],
     });
 

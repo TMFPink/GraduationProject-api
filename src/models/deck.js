@@ -9,7 +9,7 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'card_domain_id',
         as: 'domain',
       });
-      Deck.hasMany(models.DeckCard, { foreignKey: 'deck_id' });
+      Deck.hasMany(models.DeckCard, { foreignKey: 'deck_id', as: 'cards' });
     }
   }
   Deck.init(
