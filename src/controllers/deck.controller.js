@@ -6,13 +6,13 @@ const DeckService = require('../services/deck.service');
 class DeckController {
   createDeck = async (req, res, next) => {
     const user_id = req.user.user_id;
-    const { name, card_domain_id, format, cards } = req.body;
+    const { name, card_type, format, cards } = req.body;
 
     new CREATED({
       message: 'Deck created successfully',
       metadata: await DeckService.createDeck(user_id, {
         name,
-        card_domain_id,
+        card_type,
         format,
         cards,
       }),
@@ -45,9 +45,10 @@ class DeckController {
   };
 
   getDeckDetail = async (req, res, next) => {
+    const user_id = req.user.user_id;
     new OK({
       message: 'Deck detail retrieved successfully',
-      metadata: await DeckService.getDeckDetail(req.params.id),
+      metadata: await DeckService.getDeckDetail(req.params.id, user_id),
     }).send(res);
   };
 
