@@ -98,6 +98,10 @@ class CardService {
         ([key]) => !['domain', 'page', 'limit', 'key', 'value'].includes(key)
       )
       .map(([key, value]) => {
+        if (key === 'name') {
+          // Special case for "name"
+          return { name: { [Op.iLike]: `%${value}%` } };
+        }
         return Sequelize.where(Sequelize.json(`meta_data.${key}`), {
           [Op.iLike]: `%${value}%`,
         });
