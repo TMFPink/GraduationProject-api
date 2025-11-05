@@ -11,6 +11,7 @@ module.exports = (sequelize, DataTypes) => {
       User.hasMany(models.Deck, { foreignKey: 'user_id' });
       User.hasMany(models.Post, { foreignKey: 'user_id' });
       User.hasMany(models.Comment, { foreignKey: 'user_id' });
+      User.hasMany(models.OwnedCard, { foreignKey: 'user_id' });
     }
   }
   User.init(
