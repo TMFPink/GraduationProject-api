@@ -29,7 +29,7 @@ users_api.use('/report', reportRouter);
 users_api.use('/posts', postsRouter);
 users_api.use('/comments', commentsRouter);
 users_api.use('/chat', messageRouter);
-users_api.use('/collection', collectionRouter);
+users_api.use('/collections', collectionRouter);
 users_api.use('/deck', deckRouter);
 
 module.exports = users_api;
