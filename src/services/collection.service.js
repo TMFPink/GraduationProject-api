@@ -129,10 +129,9 @@ class CollectionService {
     const collection = await db.Collection.findOne({
       where: { collection_id, user_id },
       include: [
-        { model: db.CardDomain, as: 'domain' },
+        { model: db.CardDomain },
         {
           model: db.CollectionCard,
-          as: 'cards',
           include: [
             {
               model: db.Card,
@@ -166,4 +165,5 @@ class CollectionService {
   };
 }
 
+module.exports = CollectionService;
 module.exports = CollectionService;

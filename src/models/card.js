@@ -10,6 +10,7 @@ module.exports = (sequelize, DataTypes) => {
       });
       Card.hasMany(models.CardImage, { foreignKey: 'card_id', as: 'images' });
       Card.hasMany(models.CollectionCard, { foreignKey: 'card_id' });
+      Card.hasMany(models.OwnedCard, { foreignKey: 'card_id' });
     }
   }
   Card.init(

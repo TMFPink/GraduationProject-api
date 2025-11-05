@@ -1,0 +1,208 @@
+openapi: 3.0.0
+info:
+  title: Owned Card Service
+  version: 1.0.0
+  description: API endpoints for managing user's owned cards collection.
+
+tags:
+  - name: Owned Card
+    description: Manage user's owned cards - add, retrieve, and remove cards from personal collection.
+
+paths:
+  /owned-cards:
+    post:
+      tags: [Owned Card]
+      summary: Add a card to owned cards
+      description: Add a card to the authenticated user's owned cards collection.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddOwnedCardRequest'
+      responses:
+        '201':
+          description: Card added to owned cards successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddOwnedCardResponse'
+        '401':
+          description: Unauthorized user
+        '404':
+          description: Card not found
+
+    get:
+      tags: [Owned Card]
+      summary: Get all owned cards
+      description: Retrieve all cards owned by the authenticated user, paginated.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            example: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 20
+          description: Number of cards per page
+        - name: card_domain_id
+          in: query
+          schema:
+            type: string
+          description: Filter by card domain ID (optional)
+      responses:
+        '200':
+          description: Owned cards retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOwnedCardsResponse'
+        '401':
+          description: Unauthorized user
+
+  /owned-cards/{owned_card_id}:
+    delete:
+      tags: [Owned Card]
+      summary: Remove a card from owned cards
+      description: Remove a specific card from the authenticated user's owned cards collection.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: owned_card_id
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The ID of the owned card to remove from owned cards
+      responses:
+        '200':
+          description: Card removed from owned cards successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RemoveOwnedCardResponse'
+        '401':
+          description: Unauthorized user
+        '404':
+          description: Owned card not found
+
+components:
+  schemas:
+    # ---------- Core Models ----------
+    OwnedCard:
+      type: object
+      properties:
+        owned_card_id:
+          type: string
+          example: 11111111-1111-1111-1111-111111111111
+        card_domain_id:
+          type: string
+          example: 11111111-1111-1111-1111-111111111111
+        user_id:
+          type: string
+          example: 22222222-2222-2222-2222-222222222222
+        card_id:
+          type: string
+          example: 33333333-3333-3333-3333-333333333333
+        Card:
+          type: object
+          properties:
+            card_id:
+              type: string
+              example: 33333333-3333-3333-3333-333333333333
+            name:
+              type: string
+              example: Blue-Eyes White Dragon
+            rarity:
+              type: string
+              example: Ultra Rare
+            image_normal_url:
+              type: string
+              example: https://example.com/card-image.jpg
+            card_type:
+              type: string
+              example: ygo
+
+    # ---------- Requests ----------
+    AddOwnedCardRequest:
+      type: object
+      required: [card_id, card_domain_id]
+      properties:
+        card_id:
+          type: string
+          example: aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee
+          description: The ID of the card to add to owned cards
+        card_domain_id:
+          type: string
+          example: 11111111-1111-1111-1111-111111111111
+          description: The domain ID for the card
+
+    RemoveOwnedCardRequest:
+      type: object
+      required: [card_domain_id]
+      properties:
+        card_domain_id:
+          type: string
+          example: 11111111-1111-1111-1111-111111111111
+          description: The domain ID for the card to remove
+
+    # ---------- Responses ----------
+    AddOwnedCardResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Card added to owned cards successfully
+        metadata:
+          type: object
+          properties:
+            ownedCard:
+              $ref: '#/components/schemas/OwnedCard'
+
+    GetOwnedCardsResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Owned cards retrieved successfully
+        metadata:
+          type: object
+          properties:
+            total:
+              type: integer
+              example: 25
+              description: Total number of owned cards
+            page:
+              type: integer
+              example: 1
+              description: Current page number
+            limit:
+              type: integer
+              example: 20
+              description: Number of cards per page
+            ownedCards:
+              type: array
+              items:
+                $ref: '#/components/schemas/OwnedCard'
+
+    RemoveOwnedCardResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Card removed from owned cards successfully
+
+  # ---------- Security ----------
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

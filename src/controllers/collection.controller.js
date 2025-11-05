@@ -6,13 +6,13 @@ const CollectionService = require('../services/collection.service');
 class CollectionController {
   addCardToCollection = async (req, res, next) => {
     const user_id = req.user.user_id;
-    const { id } = req.params; // collection_id
+    const { collection_id } = req.params; // collection_id
     const { card_id } = req.body;
 
     new OK({
       message: 'Card added to collection successfully',
       metadata: await CollectionService.addCardToCollection(
-        id,
+        collection_id,
         user_id,
         card_id
       ),
@@ -21,13 +21,13 @@ class CollectionController {
 
   createCollection = async (req, res, next) => {
     const user_id = req.user.user_id;
-    const { name, card_domain_id, cards } = req.body;
+    const { name, card_type, cards } = req.body;
 
     new CREATED({
       message: 'Collection created successfully',
       metadata: await CollectionService.createCollection(user_id, {
         name,
-        card_domain_id,
+        card_type,
         cards,
       }),
     }).send(res);
@@ -61,7 +61,10 @@ class CollectionController {
   getCollectionDetail = async (req, res, next) => {
     new OK({
       message: 'Collection detail retrieved successfully',
-      metadata: await CollectionService.getCollectionDetail(req.params.id),
+      metadata: await CollectionService.getCollectionDetail(
+        req.params.id,
+        req.user.user_id
+      ),
     }).send(res);
   };
 
