@@ -35,11 +35,11 @@ class OwnedCardController {
 
   removeOwnedCard = async (req, res, next) => {
     const user_id = req.user.user_id;
-    const { owned_card_id } = req.params;
-    console.log(owned_card_id);
+    const { card_id } = req.params;
+
     new OK({
       message: 'Card removed from owned cards successfully',
-      metadata: await OwnedCardService.removeOwnedCard(user_id, owned_card_id),
+      metadata: await OwnedCardService.removeOwnedCard(user_id, card_id),
     }).send(res);
   };
 }

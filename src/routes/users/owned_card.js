@@ -14,7 +14,7 @@ router.get('/', verifyToken, asyncHandler(OwnedCardController.getOwnedCards));
 
 // Remove a card from owned cards
 router.delete(
-  '/:owned_card_id',
+  '/:card_id',
   verifyToken,
   asyncHandler(OwnedCardController.removeOwnedCard)
 );

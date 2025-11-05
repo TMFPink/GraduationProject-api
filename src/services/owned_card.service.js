@@ -30,7 +30,7 @@ class OwnedCardService {
   };
 
   /**
-   * Get all owned cards for a user
+   * Get all owned cards for a user, grouped by card with quantities
    */
   static getOwnedCards = async (
     user_id,
@@ -45,7 +45,8 @@ class OwnedCardService {
       whereClause.card_domain_id = card_domain_id;
     }
 
-    const { count, rows } = await db.OwnedCard.findAndCountAll({
+    // Get all owned cards with card details and group by card_id
+    const ownedCards = await db.OwnedCard.findAll({
       where: whereClause,
       include: [
         {
@@ -53,32 +54,50 @@ class OwnedCardService {
           attributes: ['card_id', 'name', 'rarity', 'image_normal_url'],
         },
       ],
-      limit: parseInt(limit),
-      offset,
-      order: [['owned_card_id', 'DESC']],
+      order: [['createdAt', 'DESC']], // Latest first for grouping
     });
 
+    // Group cards by card_id and calculate quantities
+    const cardGroups = {};
+    ownedCards.forEach((ownedCard) => {
+      const cardId = ownedCard.card_id;
+      if (!cardGroups[cardId]) {
+        cardGroups[cardId] = {
+          card_id: cardId,
+          card_domain_id: ownedCard.card_domain_id,
+          quantity: 0,
+          Card: ownedCard.Card,
+        };
+      }
+      cardGroups[cardId].quantity += 1;
+    });
+
+    // Convert to array and apply pagination
+    const groupedCards = Object.values(cardGroups);
+    const total = groupedCards.length;
+    const paginatedCards = groupedCards.slice(offset, offset + parseInt(limit));
+
     return {
-      total: count,
+      total,
       page: parseInt(page),
       limit: parseInt(limit),
-      ownedCards: rows,
+      ownedCards: paginatedCards,
     };
   };
 
   /**
-   * Remove a card from user's owned cards
+   * Remove the latest owned card by card_id
    */
-  static removeOwnedCard = async (user_id, owned_card_id) => {
+  static removeOwnedCard = async (user_id, card_id) => {
+    // Find the latest owned card for this user and card_id
     const ownedCard = await db.OwnedCard.findOne({
-      where: { user_id, owned_card_id },
+      where: { user_id, card_id },
+      order: [['createdAt', 'DESC']], // Get the latest one
     });
 
     if (!ownedCard) {
       throw new NotFoundError('Owned card not found');
     }
-
-    const card_id = ownedCard.card_id;
 
     await ownedCard.destroy();
 
