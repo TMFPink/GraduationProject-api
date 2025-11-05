@@ -6,11 +6,20 @@ const fetch = require('node-fetch');
 const AWS = require('aws-sdk');
 const { Sequelize } = require('sequelize');
 
-// --- DB Setup ---
-const connectionString = process.env.DATABASE_URL;
-if (!connectionString) throw new Error('Missing DATABASE_URL in environment.');
+/* =========================
+   CONFIG
+========================= */
+const CARD_DOMAIN_ID =
+  process.env.CARD_DOMAIN_ID || '11111111-1111-1111-1111-111111111111';
+const YGO_API_URL = 'https://db.ygoprodeck.com/api/v7/cardinfo.php';
+const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME_YGO;
+const BASE_URL = process.env.R2_URL_YGO;
 
-const sequelize = new Sequelize(connectionString, {
+if (!process.env.DATABASE_URL) throw new Error('Missing DATABASE_URL');
+if (!R2_BUCKET_NAME) throw new Error('Missing R2_BUCKET_NAME_YGO');
+if (!BASE_URL) throw new Error('Missing R2_URL_YGO');
+
+const sequelize = new Sequelize(process.env.DATABASE_URL, {
   dialect: 'postgres',
   dialectOptions: {
     ssl: { require: true, rejectUnauthorized: false },
@@ -18,7 +27,6 @@ const sequelize = new Sequelize(connectionString, {
   logging: false,
 });
 
-// --- R2 Setup ---
 const R2 = new AWS.S3({
   endpoint: process.env.R2_ENDPOINT,
   accessKeyId: process.env.R2_ACCESS_KEY_ID,
@@ -26,19 +34,21 @@ const R2 = new AWS.S3({
   region: 'auto',
   signatureVersion: 'v4',
 });
-const R2_BUCKET_NAME = process.env.R2_BUCKET_NAME_YGO;
-const BASE_URL = process.env.R2_URL_YGO;
 
-// --- Helpers ---
-function cleanJSON(obj) {
-  if (Array.isArray(obj)) return obj.map(cleanJSON);
-  if (obj && typeof obj === 'object')
-    return Object.fromEntries(
-      Object.entries(obj).map(([k, v]) => [k, cleanJSON(v)])
-    );
-  return obj === undefined ? null : obj;
+/* =========================
+   HELPERS
+========================= */
+
+// Normalize names to reduce accidental dupes caused by whitespace/Unicode differences.
+function normalizeName(name) {
+  return (name || '')
+    .normalize('NFC')
+    .trim()
+    .replace(/\s+/g, ' ')
+    .toLowerCase();
 }
 
+// List existing filenames under a prefix in R2 (returns Set of bare filenames, e.g., "123456.jpg")
 async function getExistingImageFilenames(prefix) {
   const existing = new Set();
   let ContinuationToken;
@@ -49,196 +59,224 @@ async function getExistingImageFilenames(prefix) {
       ContinuationToken,
     }).promise();
     for (const obj of res.Contents || []) {
-      const key = obj.Key.replace(prefix, '');
-      existing.add(key);
+      const key = obj.Key;
+      if (key.startsWith(prefix)) {
+        existing.add(key.substring(prefix.length)); // keep only "file.jpg"
+      }
     }
     ContinuationToken = res.IsTruncated ? res.NextContinuationToken : null;
   } while (ContinuationToken);
   return existing;
 }
 
-async function uploadToR2(prefix, filename, buffer) {
+async function uploadToR2(
+  prefix,
+  filename,
+  buffer,
+  contentType = 'image/jpeg'
+) {
   await R2.putObject({
     Bucket: R2_BUCKET_NAME,
     Key: `${prefix}${filename}`,
     Body: buffer,
-    ContentType: 'image/jpeg',
+    ContentType: contentType,
   }).promise();
 }
 
-// --- MAIN ---
-async function main() {
-  if (!BASE_URL) throw new Error('Missing R2_URL in environment.');
+// Extract trailing numeric id from ".../12345.jpg"
+function extractImageIdFromUrl(url) {
+  if (!url) return null;
+  const m = url.match(/\/(\d+)\.jpg(?:$|\?)/i);
+  return m ? m[1] : null;
+}
 
+/* =========================
+   MAIN
+========================= */
+
+async function main() {
   console.log('Connecting to database...');
   await sequelize.authenticate();
-  console.log('Connected to database.');
+  console.log('Connected.');
 
   const queryInterface = sequelize.getQueryInterface();
 
-  console.log('Fetching existing cards from DB...');
-  const [existingCards] = await sequelize.query(
-    'SELECT card_id, name FROM cards'
+  // 1) Load existing cards for the target domain and build name->card_id map.
+  console.log('Loading existing cards (scoped by domain)...');
+  const [cards] = await sequelize.query(
+    `
+    SELECT card_id, name
+    FROM cards
+    WHERE card_domain_id = :domain
+    `,
+    { replacements: { domain: CARD_DOMAIN_ID } }
   );
-  const cardNameToId = new Map(existingCards.map((c) => [c.name, c.card_id]));
-  console.log(`Found ${cardNameToId.size} existing cards.`);
 
-  console.log('Fetching existing images from DB...');
+  const nameToCardId = new Map(
+    cards.map((c) => [normalizeName(c.name), c.card_id])
+  );
+  console.log(`Found ${nameToCardId.size} cards in domain ${CARD_DOMAIN_ID}.`);
+
+  // 2) Load existing card_images and build a Set of known YGO image ids to avoid duplicates.
+  console.log('Loading existing card_images to dedupe by image id...');
   const [existingImages] = await sequelize.query(
-    'SELECT image_url_small FROM card_images'
+    `SELECT image_url_small FROM card_images`
   );
-  const existingImageURLs = new Set(
-    existingImages.map((i) => i.image_url_small)
+
+  const existingImageIds = new Set(
+    existingImages
+      .map((r) => extractImageIdFromUrl(r.image_url_small))
+      .filter(Boolean)
   );
-  console.log(`Found ${existingImageURLs.size} existing image rows.`);
+  console.log(`Known image ids in DB: ${existingImageIds.size}`);
 
-  console.log('Fetching YGOProDeck API data...');
-  const res = await fetch('https://db.ygoprodeck.com/api/v7/cardinfo.php');
-  const { data } = await res.json();
-  console.log(`\n\nFetched ${data.length} cards from YGO API.`);
-
-  console.log('Checking existing R2 image files...');
+  // 3) Enumerate existing files on R2 to avoid re-upload.
+  console.log('Scanning R2 buckets for existing files...');
   const existingFiles = {
     original: await getExistingImageFilenames('original/'),
     low_resolution: await getExistingImageFilenames('low_resolution/'),
     cropped: await getExistingImageFilenames('cropped/'),
   };
-  console.log(`Fetched R2 image file list:
-  - Original: ${existingFiles.original.size}
-  - Low resolution: ${existingFiles.low_resolution.size}`);
+  console.log(`R2 files:
+  - original/: ${existingFiles.original.size}
+  - low_resolution/: ${existingFiles.low_resolution.size}
+  - cropped/: ${existingFiles.cropped.size}`);
 
-  const newCardRows = [];
+  // 4) Fetch YGO API data
+  console.log('Fetching YGOProDeck API data...');
+  const res = await fetch(YGO_API_URL);
+  if (!res.ok) {
+    throw new Error(`YGO API error: ${res.status} ${await res.text()}`);
+  }
+  const { data } = await res.json();
+  console.log(`Fetched ${data.length} cards from YGO API.`);
+
+  // 5) Build image rows to insert (images-only). Upload missing R2 files on the fly.
   const newImageRows = [];
   let missingImageCount = 0;
   let uploadedImageCount = 0;
+  let skippedNoCard = 0;
 
-  // --- SCAN ALL CARDS ---
   for (const card of data) {
-    const existingCardId = cardNameToId.get(card.name);
-    const cardId = existingCardId || uuidv4();
-
-    // Insert new card if missing
-    if (!existingCardId) {
-      const meta = cleanJSON({
-        type: card.type,
-        desc: card.desc,
-        atk: card.atk,
-        def: card.def,
-        level: card.level,
-        race: card.race,
-        attribute: card.attribute,
-        archetype: card.archetype,
-        sets: card.card_sets || [],
-      });
-
-      const firstImg = (card.card_images && card.card_images[0]) || null;
-      const defaultOriginal = firstImg
-        ? `${BASE_URL}/original/${firstImg.id}.jpg`
-        : null;
-      const defaultLowRes = firstImg
-        ? `${BASE_URL}/low_resolution/${firstImg.id}.jpg`
-        : null;
-      const defaultCropped = firstImg
-        ? `${BASE_URL}/cropped/${firstImg.id}.jpg`
-        : null;
-
-      newCardRows.push({
-        card_id: cardId,
-        name: card.name,
-        rarity: card.card_sets?.[0]?.set_rarity || 'Unknown',
-        card_domain_id: '11111111-1111-1111-1111-111111111111',
-        image_normal_url: defaultLowRes,
-        image_large_url: defaultOriginal,
-        image_thumb_url: defaultCropped,
-        meta_data: JSON.stringify(meta),
-      });
+    const cardId = nameToCardId.get(normalizeName(card.name));
+    if (!cardId) {
+      // Card does not exist in this domain; we do NOT create it (images-only mode).
+      skippedNoCard++;
+      continue;
     }
 
-    // Check and upload missing images in R2
     for (const [index, img] of (card.card_images || []).entries()) {
-      const filename = `${img.id}.jpg`;
-      const formats = [
-        { prefix: 'original/', field: 'image_url' },
-        { prefix: 'low_resolution/', field: 'image_url_small' },
+      // URLs from YGO
+      const urlOriginal = img.image_url; // big
+      const urlLowRes = img.image_url_small; // small
+      const urlCropped = img.image_url_cropped; // cropped
+
+      // Parse a stable imageId (YGO numeric id)
+      const imageId = String(
+        img.id ||
+          extractImageIdFromUrl(urlOriginal) ||
+          extractImageIdFromUrl(urlLowRes)
+      );
+      if (!imageId) continue;
+
+      const fileName = `${imageId}.jpg`;
+
+      // Skip if DB already has this image id (dedupe)
+      if (existingImageIds.has(imageId)) continue;
+
+      // Ensure files exist on R2 (original / low_resolution / cropped)
+      const targets = [
+        {
+          prefix: 'original/',
+          exists: existingFiles.original,
+          source: urlOriginal,
+        },
+        {
+          prefix: 'low_resolution/',
+          exists: existingFiles.low_resolution,
+          source: urlLowRes,
+        },
+        {
+          prefix: 'cropped/',
+          exists: existingFiles.cropped,
+          source: urlCropped,
+        },
       ];
 
-      for (const { prefix, field } of formats) {
-        const key = prefix.replace('/', '');
-        if (!existingFiles[key].has(filename)) {
-          missingImageCount++;
+      for (const t of targets) {
+        if (!t.source) continue;
+        if (!t.exists.has(fileName)) {
           try {
-            const ygoUrl = img[field];
-            const imageRes = await fetch(ygoUrl);
-            const buffer = await imageRes.arrayBuffer();
-            await uploadToR2(prefix, filename, Buffer.from(buffer));
+            missingImageCount++;
+            const r = await fetch(t.source);
+            if (!r.ok) throw new Error(`${r.status} fetching ${t.source}`);
+            const buf = Buffer.from(await r.arrayBuffer());
+            await uploadToR2(t.prefix, fileName, buf, 'image/jpeg');
+            t.exists.add(fileName);
             uploadedImageCount++;
-            console.log(`Uploaded missing ${prefix}${filename}`);
-            existingFiles[key].add(filename);
+            console.log(`Uploaded ${t.prefix}${fileName}`);
           } catch (e) {
             console.error(
-              `Failed to upload ${prefix}${filename}: ${e.message}`
+              `Failed to upload ${t.prefix}${fileName}: ${e.message}`
             );
           }
         }
       }
 
-      // Insert image row if not in DB
-      const smallUrl = `${BASE_URL}/original/${img.id}.jpg`;
-      if (!existingImageURLs.has(smallUrl)) {
-        newImageRows.push({
-          card_image_id: uuidv4(),
-          card_id: cardId,
-          image_url: `${BASE_URL}/low_resolution/${img.id}.jpg`,
-          image_url_small: smallUrl,
-          image_url_cropped: `${BASE_URL}/cropped/${img.id}.jpg`,
-          is_default: index === 0,
-          meta_data: JSON.stringify(null),
-        });
-        existingImageURLs.add(smallUrl);
-      }
+      // Compose URLs pointing to your R2 (these are what you store in DB)
+      const dbOriginal = `${BASE_URL}/original/${fileName}`;
+      const dbLowRes = `${BASE_URL}/low_resolution/${fileName}`;
+      const dbCropped = `${BASE_URL}/cropped/${fileName}`;
+
+      newImageRows.push({
+        card_image_id: uuidv4(),
+        card_id: cardId,
+        image_url: dbLowRes, // keep as-is per your schema
+        image_url_small: dbOriginal, // used as the “dedupe” URL historically
+        image_url_cropped: dbCropped,
+        is_default: index === 0,
+        meta_data: JSON.stringify(null),
+      });
+
+      // Mark this imageId as seen so we don't add it again in this run
+      existingImageIds.add(imageId);
     }
   }
 
-  // --- SUMMARY BEFORE DB INSERT ---
-  console.log(`\nSummary before DB insert:`);
-  console.log(`New cards to insert: ${newCardRows.length}`);
-  console.log(`New images to insert: ${newImageRows.length}`);
-  console.log(`Missing images detected: ${missingImageCount}`);
-  console.log(`Images successfully uploaded to R2: ${uploadedImageCount}`);
+  // 6) Summary
+  console.log('\nSummary before DB insert:');
+  console.log(`Images to insert: ${newImageRows.length}`);
+  console.log(
+    `Images uploaded to R2: ${uploadedImageCount} (out of ${missingImageCount} missing)`
+  );
+  console.log(`Cards skipped (not found in domain): ${skippedNoCard}`);
 
-  // --- DB INSERT ---
-  const transaction = await sequelize.transaction();
-  try {
-    const batchSize = 1000;
-
-    if (newCardRows.length > 0) {
-      console.log('\nInserting new cards...');
-      for (let i = 0; i < newCardRows.length; i += batchSize) {
-        const batch = newCardRows.slice(i, i + batchSize);
-        await queryInterface.bulkInsert('cards', batch, { transaction });
-        console.log(`Inserted cards ${i}–${i + batch.length}`);
-      }
-    }
-
-    if (newImageRows.length > 0) {
+  // 7) Insert images only
+  if (newImageRows.length > 0) {
+    const transaction = await sequelize.transaction();
+    try {
       console.log('\nInserting new card images...');
+      const batchSize = 1000;
       for (let i = 0; i < newImageRows.length; i += batchSize) {
         const batch = newImageRows.slice(i, i + batchSize);
         await queryInterface.bulkInsert('card_images', batch, { transaction });
         console.log(`Inserted images ${i}–${i + batch.length}`);
       }
+      await transaction.commit();
+      console.log('\n✅ Image sync complete (images-only).');
+    } catch (err) {
+      await transaction.rollback();
+      console.error('❌ Transaction failed:', err);
     }
-
-    await transaction.commit();
-    console.log('\n✅ Sync complete.');
-  } catch (err) {
-    await transaction.rollback();
-    console.error('❌ Transaction failed:', err);
-  } finally {
-    await sequelize.close();
+  } else {
+    console.log('\nNothing to insert. ✅');
   }
 }
 
-main().catch((err) => {
-  console.error('Fatal error:', err);
-});
+main()
+  .catch((err) => console.error('Fatal error:', err))
+  .finally(async () => {
+    try {
+      await sequelize.close();
+    } catch {}
+  });

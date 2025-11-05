@@ -233,15 +233,10 @@ if (require.main === module) {
       process.exit(1);
     });
   } else {
-    main()
-      .then(() => {
-        console.log('\n🔍 Running validation...');
-        return validateUpdates();
-      })
-      .catch((err) => {
-        console.error('Fatal error:', err);
-        process.exit(1);
-      });
+    main().catch((err) => {
+      console.error('Fatal error:', err);
+      process.exit(1);
+    });
   }
 }
 
