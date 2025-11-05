@@ -36,8 +36,8 @@ paths:
 
     get:
       tags: [Owned Card]
-      summary: Get all owned cards
-      description: Retrieve all cards owned by the authenticated user, paginated.
+      summary: Get all owned cards grouped by quantity
+      description: Retrieve all cards owned by the authenticated user, grouped by card with quantities, paginated.
       security:
         - bearerAuth: []
       parameters:
@@ -52,7 +52,7 @@ paths:
           schema:
             type: integer
             example: 20
-          description: Number of cards per page
+          description: Number of unique cards per page
         - name: card_domain_id
           in: query
           schema:
@@ -68,20 +68,20 @@ paths:
         '401':
           description: Unauthorized user
 
-  /owned-cards/{owned_card_id}:
+  /owned-cards/{card_id}:
     delete:
       tags: [Owned Card]
-      summary: Remove a card from owned cards
-      description: Remove a specific card from the authenticated user's owned cards collection.
+      summary: Remove the latest owned card
+      description: Remove the most recently added instance of a card from the authenticated user's owned cards collection.
       security:
         - bearerAuth: []
       parameters:
-        - name: owned_card_id
+        - name: card_id
           in: path
           required: true
           schema:
             type: string
-          description: The ID of the owned card to remove from owned cards
+          description: The ID of the card to remove from owned cards
       responses:
         '200':
           description: Card removed from owned cards successfully
@@ -97,21 +97,19 @@ paths:
 components:
   schemas:
     # ---------- Core Models ----------
-    OwnedCard:
+    OwnedCardGroup:
       type: object
       properties:
-        owned_card_id:
-          type: string
-          example: 11111111-1111-1111-1111-111111111111
-        card_domain_id:
-          type: string
-          example: 11111111-1111-1111-1111-111111111111
-        user_id:
-          type: string
-          example: 22222222-2222-2222-2222-222222222222
         card_id:
           type: string
           example: 33333333-3333-3333-3333-333333333333
+        card_domain_id:
+          type: string
+          example: 11111111-1111-1111-1111-111111111111
+        quantity:
+          type: integer
+          example: 3
+          description: Number of copies of this card owned by the user
         Card:
           type: object
           properties:
@@ -179,7 +177,7 @@ components:
             total:
               type: integer
               example: 25
-              description: Total number of owned cards
+              description: Total number of unique cards owned
             page:
               type: integer
               example: 1
@@ -187,11 +185,11 @@ components:
             limit:
               type: integer
               example: 20
-              description: Number of cards per page
+              description: Number of unique cards per page
             ownedCards:
               type: array
               items:
-                $ref: '#/components/schemas/OwnedCard'
+                $ref: '#/components/schemas/OwnedCardGroup'
 
     RemoveOwnedCardResponse:
       type: object
