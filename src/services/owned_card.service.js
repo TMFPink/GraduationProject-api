@@ -78,7 +78,34 @@ class OwnedCardService {
       throw new NotFoundError('Owned card not found');
     }
 
+    const card_id = ownedCard.card_id;
+
     await ownedCard.destroy();
+
+    // Check if user still owns other instances of this card
+    const remainingOwnedCards = await db.OwnedCard.count({
+      where: { user_id, card_id },
+    });
+
+    // If user doesn't own this card anymore, remove it from all their collections
+    if (remainingOwnedCards === 0) {
+      // Get all user's collections that contain this card
+      const userCollections = await db.Collection.findAll({
+        where: { user_id },
+        attributes: ['collection_id'],
+      });
+
+      const collectionIds = userCollections.map((c) => c.collection_id);
+
+      if (collectionIds.length > 0) {
+        await db.CollectionCard.destroy({
+          where: {
+            collection_id: collectionIds,
+            card_id,
+          },
+        });
+      }
+    }
 
     return {
       message: 'Card removed from owned cards successfully',

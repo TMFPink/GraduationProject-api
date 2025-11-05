@@ -7,7 +7,7 @@ const { verifyToken } = require('../../middlewares/auth');
 const { asyncHandler } = require('../../helpers/helpers');
 
 router.post(
-  '/:id/card',
+  '/:collection_id/cards',
   verifyToken,
   asyncHandler(CollectionController.addCardToCollection)
 );
