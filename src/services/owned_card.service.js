@@ -8,11 +8,17 @@ class OwnedCardService {
   /**
    * Add a card to user's owned cards
    */
-  static addOwnedCard = async (user_id, card_id, card_domain_id) => {
+  static addOwnedCard = async (user_id, card_id, domain) => {
     // Check if card exists
     const card = await db.Card.findByPk(card_id);
     if (!card) {
       throw new NotFoundError('Card not found');
+    }
+    let card_domain_id;
+    if (domain == 'ygo') {
+      card_domain_id = '11111111-1111-1111-1111-111111111111';
+    } else if (domain == 'pkm') {
+      card_domain_id = '22222222-2222-2222-2222-222222222222';
     }
 
     // Create the owned card record
@@ -32,17 +38,16 @@ class OwnedCardService {
   /**
    * Get all owned cards for a user, grouped by card with quantities
    */
-  static getOwnedCards = async (
-    user_id,
-    card_domain_id,
-    page = 1,
-    limit = 20
-  ) => {
+  static getOwnedCards = async (user_id, domain, page = 1, limit = 20) => {
     const offset = (page - 1) * limit;
 
     const whereClause = { user_id };
-    if (card_domain_id) {
-      whereClause.card_domain_id = card_domain_id;
+    if (domain) {
+      if (domain == 'ygo') {
+        whereClause.card_domain_id = '11111111-1111-1111-1111-111111111111';
+      } else if (domain == 'pkm') {
+        whereClause.card_domain_id = '22222222-2222-2222-2222-222222222222';
+      }
     }
 
     // Get all owned cards with card details and group by card_id

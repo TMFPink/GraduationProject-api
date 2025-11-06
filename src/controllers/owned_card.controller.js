@@ -6,27 +6,23 @@ const OwnedCardService = require('../services/owned_card.service');
 class OwnedCardController {
   addOwnedCard = async (req, res, next) => {
     const user_id = req.user.user_id;
-    const { card_id, card_domain_id } = req.body;
+    const { card_id, domain } = req.body;
 
     new CREATED({
       message: 'Card added to owned cards successfully',
-      metadata: await OwnedCardService.addOwnedCard(
-        user_id,
-        card_id,
-        card_domain_id
-      ),
+      metadata: await OwnedCardService.addOwnedCard(user_id, card_id, domain),
     }).send(res);
   };
 
   getOwnedCards = async (req, res, next) => {
     const user_id = req.user.user_id;
-    const { page = 1, limit = 20, card_domain_id } = req.query;
+    const { page = 1, limit = 20, domain } = req.query;
 
     new OK({
       message: 'Owned cards retrieved successfully',
       metadata: await OwnedCardService.getOwnedCards(
         user_id,
-        card_domain_id,
+        domain,
         page,
         limit
       ),
