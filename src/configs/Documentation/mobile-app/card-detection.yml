@@ -1,0 +1,141 @@
+openapi: 3.0.0
+info:
+  title: Card Detection Service
+  version: 1.0.0
+  description: Express API that calls FastAPI to detect card names from uploaded images.
+
+tags:
+  - name: Model
+    description: Image recognition and card detection endpoints.
+
+paths:
+  /card-detection/names:
+    post:
+      tags: [Model]
+      summary: Detect card names from uploaded image
+      description: Upload an image and use the FastAPI backend to detect card names.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to analyze
+      responses:
+        '200':
+          description: Card names detected successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetectResponse'
+        '400':
+          description: Invalid input or failed detection
+        '500':
+          description: Internal server error
+
+  /card-detection:
+    post:
+      tags: [Model]
+      summary: Detect card names and return full card data
+      description: Upload an image, detect card names, and return complete card information including images and metadata.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to analyze
+                domain:
+                  type: string
+                  enum: [ygo, pkm]
+                  default: ygo
+                  description: Card domain (Yu-Gi-Oh or Pokemon)
+      responses:
+        '200':
+          description: Cards detected and data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetectWithDataResponse'
+        '400':
+          description: Invalid input or failed detection
+        '500':
+          description: Internal server error
+
+components:
+  schemas:
+    DetectResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Card names detected successfully
+        metadata:
+          type: object
+          properties:
+            card_names:
+              type: array
+              items:
+                type: string
+              example:
+                - 'Blue-Eyes White Dragon'
+                - 'Dark Magician'
+
+    DetectWithDataResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Cards detected and data retrieved successfully
+        metadata:
+          type: object
+          properties:
+            detected_names:
+              type: array
+              items:
+                type: string
+              example:
+                - 'Blue-Eyes White Dragon'
+                - 'Dark Magician'
+            cards:
+              type: array
+              items:
+                $ref: '#/components/schemas/CardData'
+            total_detected:
+              type: integer
+              example: 2
+            total_found:
+              type: integer
+              example: 2
+
+    CardData:
+      type: object
+      properties:
+        card_id:
+          type: string
+          example: '550e8400-e29b-41d4-a716-446655440000'
+        name:
+          type: string
+          example: 'Blue-Eyes White Dragon'
+        rarity:
+          type: string
+          example: 'Ultra Rare'
+        image_normal_url:
+          type: string
+          example: 'https://example.com/card-normal.jpg'
+        image_large_url:
+          type: string
+          example: 'https://example.com/card-large.jpg'
+        image_thumb_url:
+          type: string
+          example: 'https://example.com/card-thumb.jpg'

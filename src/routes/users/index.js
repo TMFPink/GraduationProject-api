@@ -14,6 +14,7 @@ const messageRouter = require('./chat');
 const collectionRouter = require('./collection');
 const deckRouter = require('./deck');
 const ownedCardRouter = require('./owned_card');
+const cardDetectionRouter = require('./card-detection');
 
 const users_api = express();
 
@@ -33,5 +34,6 @@ users_api.use('/chat', messageRouter);
 users_api.use('/collections', collectionRouter);
 users_api.use('/deck', deckRouter);
 users_api.use('/owned-cards', ownedCardRouter);
+users_api.use('/card-detection', cardDetectionRouter);
 
 module.exports = users_api;
