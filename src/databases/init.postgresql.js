@@ -17,6 +17,10 @@ const initialize = async () => {
 
   const pool = new Pool({
     connectionString: defaultDbUrl,
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
   });
 
   try {
@@ -42,6 +46,12 @@ const initialize = async () => {
 // Sequelize instance (connects to your actual app DB)
 const sequelize = new Sequelize(DATABASE_URL, {
   dialect: 'postgres',
+  dialectOptions: {
+    ssl: {
+      require: true,
+      rejectUnauthorized: false,
+    },
+  },
   logging: false,
 });
 

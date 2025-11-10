@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start:dev": "NODE_ENV=development & nodemon server.js",
-    "start:prod": "NODE_ENV=production & node ./server.js",
+    "start:prod": "NODE_ENV=production & node server.js",
     "seed:generate-new": "npx sequelize-cli seed:generate --name",
     "seed:down-and-up": "npx sequelize-cli db:seed:undo:all && npx sequelize-cli db:seed:all",
     "migrate:generate-new": "npx sequelize-cli migration:generate -n",
