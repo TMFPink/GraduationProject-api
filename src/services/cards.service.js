@@ -147,6 +147,47 @@ class CardService {
       cards: cardsWithFilteredMeta,
     };
   };
+
+  /**
+   * Get cards by array of names
+   * @param {Array} names - array of card names to search for
+   * @param {string} domain - 'ygo' or 'pkm'
+   */
+  static get_by_names = async (names, domain = 'ygo') => {
+    if (!names || !Array.isArray(names) || names.length === 0) {
+      return { cards: [] };
+    }
+
+    const where = {
+      name: {
+        [Op.or]: names.map((name) => ({ [Op.iLike]: `%${name.trim()}%` })),
+      },
+    };
+
+    if (domain === 'ygo') {
+      where.card_domain_id = '11111111-1111-1111-1111-111111111111';
+    } else if (domain === 'pkm') {
+      where.card_domain_id = '22222222-2222-2222-2222-222222222222';
+    }
+
+    const cards = await db.Card.findAll({
+      where,
+      attributes: [
+        'card_id',
+        'name',
+        'rarity',
+        'image_normal_url',
+        'image_large_url',
+        'image_thumb_url',
+      ],
+      order: [['name', 'ASC']],
+    });
+
+    return {
+      cards,
+      total: cards.length,
+    };
+  };
 }
 
 module.exports = CardService;
