@@ -4,7 +4,7 @@ const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 const { BadRequestError } = require('../core/error.response');
 
-class AvatarService {
+class ImageService {
   constructor() {
     this.R2 = new AWS.S3({
       endpoint: process.env.R2_ENDPOINT,
@@ -89,6 +89,59 @@ class AvatarService {
       return { success: false, error: error.message };
     }
   }
+
+  async uploadThumbnail(postId, file) {
+    try {
+      // Validate file type
+      const allowedMimes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+      ];
+      if (!allowedMimes.includes(file.mimetype)) {
+        throw new BadRequestError(
+          'Invalid file type. Only JPEG, PNG, and WebP are allowed.'
+        );
+      }
+
+      // Validate file size (max 10MB for thumbnails)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        throw new BadRequestError('File size too large. Maximum size is 10MB.');
+      }
+
+      // Generate unique filename
+      const fileExtension = file.originalname.split('.').pop().toLowerCase();
+      const fileName = `${postId}_${uuidv4()}.${fileExtension}`;
+      const key = `thumbnails/${fileName}`;
+
+      // Upload to R2
+      const uploadResult = await this.R2.upload({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ACL: 'public-read', // Make publicly accessible
+      }).promise();
+
+      // Return the public URL
+      const thumbnailUrl = `${this.baseUrl}/${key}`;
+      return {
+        success: true,
+        avatarUrl: thumbnailUrl, // Keep consistent interface
+        key,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestError) {
+        throw error;
+      }
+      console.error('Thumbnail upload error:', error);
+      throw new BadRequestError(
+        'Failed to upload thumbnail. Please try again.'
+      );
+    }
+  }
 }
 
-module.exports = new AvatarService();
+module.exports = new ImageService();

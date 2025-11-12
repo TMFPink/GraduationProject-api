@@ -1,12 +1,32 @@
 'use strict';
 
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 const PostController = require('../../controllers/post.controller');
 const { verifyToken } = require('../../middlewares/auth');
 const { asyncHandler } = require('../../helpers/helpers');
 
-router.post('/', verifyToken, asyncHandler(PostController.createPost));
+// Configure multer for thumbnail uploads
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit for thumbnails
+  },
+});
+
+router.post(
+  '/',
+  verifyToken,
+  upload.single('thumbnail'),
+  asyncHandler(PostController.createPost)
+);
+router.put(
+  '/:id',
+  verifyToken,
+  upload.single('thumbnail'),
+  asyncHandler(PostController.updatePost)
+);
 router.get('/', verifyToken, asyncHandler(PostController.getAllPosts));
 router.get(
   '/user/:id',

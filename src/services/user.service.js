@@ -3,7 +3,7 @@ const db = require('../models');
 const { BadRequestError } = require('../core/error.response');
 const { includes } = require('lodash');
 const { Op } = require('sequelize');
-const AvatarService = require('./avatar.service');
+const ImageService = require('./image.service');
 
 class UserService {
   static create = async ({
@@ -135,11 +135,11 @@ class UserService {
       if (avatarFile) {
         // Delete old avatar if exists
         if (user.avatar_url) {
-          await AvatarService.deleteAvatar(user.avatar_url);
+          await ImageService.deleteAvatar(user.avatar_url);
         }
 
         // Upload new avatar
-        const avatarResult = await AvatarService.uploadAvatar(
+        const avatarResult = await ImageService.uploadAvatar(
           user_id,
           avatarFile
         );
