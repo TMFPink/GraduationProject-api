@@ -6,8 +6,8 @@ const router = express.Router();
 const CardDetectionController = require('../../controllers/card-detection.controller');
 const { asyncHandler } = require('../../helpers/helpers');
 
-// Configure multer to store files temporarily
-const upload = multer({ dest: 'uploads/' });
+// Configure multer to store files in memory instead of disk
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post(
   '/',

@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  api:
+    build:
+      context: .
+      target: production
+    ports:
+      - '3000:3000'
+    environment:
+      # - NODE_ENV=production
+      # - PORT=3000
+      # - DATABASE_URL=postgresql://neondb_owner:npg_Hj3zpNyL8DxB@ep-billowing-bush-a1mi93xf-pooler.ap-southeast-1.aws.neon.tech/ygo_db?sslmode=require&channel_binding=require
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://neondb_owner:npg_Hj3zpNyL8DxB@ep-billowing-bush-a1mi93xf-pooler.ap-southeast-1.aws.neon.tech/ygo_db?sslmode=require&channel_binding=require
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - ./.env:/app/.env
+      - /app/node_modules
+    networks:
+      - app-network
+    restart: unless-stopped
+
+networks:
+  app-network:
+    driver: bridge
