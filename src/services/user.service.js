@@ -3,6 +3,7 @@ const db = require('../models');
 const { BadRequestError } = require('../core/error.response');
 const { includes } = require('lodash');
 const { Op } = require('sequelize');
+const AvatarService = require('./avatar.service');
 
 class UserService {
   static create = async ({
@@ -89,26 +90,95 @@ class UserService {
     });
   };
 
-  static update = async (id, { username, email, hash_password, role_name }) => {
-    const { role_id } = await db.Role.findOne({
-      where: { name: role_name },
-      attributes: [['id', 'role_id']],
-      raw: true,
-    });
-    if (!role_id) throw new BadRequestError('role id not found');
-    const user = await db.User.update(
-      {
-        username,
-        email,
-        hash_password,
-        role_id,
-      },
-      {
-        where: { id },
+  static update = async (user_id, updateData, avatarFile = null) => {
+    const transaction = await db.sequelize.transaction();
+
+    try {
+      // Find the user first
+      const user = await db.User.findOne({
+        where: { user_id },
+        transaction,
+      });
+
+      if (!user) {
+        throw new BadRequestError('User not found');
       }
-    );
-    if (!user) throw new BadRequestError('failed to update user');
-    return user;
+
+      const updateFields = {};
+
+      // Handle regular field updates
+      if (updateData.first_name)
+        updateFields.first_name = updateData.first_name;
+      if (updateData.last_name) updateFields.last_name = updateData.last_name;
+      if (updateData.email) updateFields.email = updateData.email;
+      if (updateData.phone_number)
+        updateFields.phone_number = updateData.phone_number;
+
+      // Handle password update
+      if (updateData.hash_password) {
+        updateFields.hash_password = updateData.hash_password;
+      }
+
+      // Handle role update
+      if (updateData.role_name) {
+        const role = await db.Role.findOne({
+          where: { name: updateData.role_name },
+          attributes: ['role_id'],
+          raw: true,
+          transaction,
+        });
+        if (!role) throw new BadRequestError('Role not found');
+        updateFields.role_id = role.role_id;
+      }
+
+      // Handle avatar upload
+      if (avatarFile) {
+        // Delete old avatar if exists
+        if (user.avatar_url) {
+          await AvatarService.deleteAvatar(user.avatar_url);
+        }
+
+        // Upload new avatar
+        const avatarResult = await AvatarService.uploadAvatar(
+          user_id,
+          avatarFile
+        );
+        if (avatarResult.success) {
+          updateFields.avatar_url = avatarResult.avatarUrl;
+        }
+      }
+
+      // Update user
+      const [affectedRows] = await db.User.update(updateFields, {
+        where: { user_id },
+        transaction,
+      });
+
+      if (affectedRows === 0) {
+        throw new BadRequestError('Failed to update user');
+      }
+
+      await transaction.commit();
+
+      // Return updated user data
+      const updatedUser = await db.User.findOne({
+        where: { user_id },
+        attributes: [
+          'user_id',
+          'first_name',
+          'last_name',
+          'email',
+          'phone_number',
+          'avatar_url',
+        ],
+        raw: true,
+      });
+
+      return updatedUser;
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   };
 
   static delete = async (id) => {
@@ -120,17 +190,19 @@ class UserService {
   };
 
   static get_basic_infor = async (user_id) => {
-    //Username
-    const { first_name, last_name, email } = await db.User.findOne({
+    const user = await db.User.findOne({
       where: { user_id },
+      attributes: ['first_name', 'last_name', 'email', 'avatar_url'],
     });
 
-    //Notifications
-    //
+    if (!user) {
+      throw new BadRequestError('User not found');
+    }
 
     return {
-      name: first_name + ' ' + last_name,
-      email,
+      name: user.first_name + ' ' + user.last_name,
+      email: user.email,
+      avatar_url: user.avatar_url,
       user_id,
     };
   };
@@ -140,9 +212,21 @@ class UserService {
       where: { user_id: user_id },
       raw: true,
     };
+
     if (fields && fields.length > 0) {
       options.attributes = fields;
+    } else {
+      // Include avatar_url in default fields
+      options.attributes = [
+        'user_id',
+        'first_name',
+        'last_name',
+        'email',
+        'phone_number',
+        'avatar_url',
+      ];
     }
+
     const user = await db.User.findOne(options);
     if (!user) throw new BadRequestError('User not found');
     return user;

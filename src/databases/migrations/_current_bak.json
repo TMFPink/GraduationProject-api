@@ -150,6 +150,11 @@
                 "meta_data": {
                     "field": "meta_data",
                     "seqType": "Sequelize.JSONB"
+                },
+                "embedding_vector": {
+                    "allowNull": true,
+                    "field": "embedding_vector",
+                    "seqType": "Sequelize.ARRAY(Sequelize.FLOAT)"
                 }
             },
             "indexes": []
@@ -915,5 +920,5 @@
     "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
     "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
     "exists": true,
-    "revision": 10
+    "revision": 11
 }

@@ -590,6 +590,44 @@
             },
             "indexes": []
         },
+        "owned_cards": {
+            "tableName": "owned_cards",
+            "schema": {
+                "owned_card_id": {
+                    "primaryKey": true,
+                    "field": "owned_card_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "card_domain_id": {
+                    "primaryKey": true,
+                    "field": "card_domain_id",
+                    "seqType": "Sequelize.UUID"
+                },
+                "user_id": {
+                    "allowNull": false,
+                    "field": "user_id",
+                    "references": {
+                        "model": "users",
+                        "key": "user_id"
+                    },
+                    "onDelete": "NO ACTION",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                },
+                "card_id": {
+                    "allowNull": false,
+                    "field": "card_id",
+                    "references": {
+                        "model": "cards",
+                        "key": "card_id"
+                    },
+                    "onDelete": "CASCADE",
+                    "onUpdate": "CASCADE",
+                    "seqType": "Sequelize.UUID"
+                }
+            },
+            "indexes": []
+        },
         "permissions": {
             "tableName": "permissions",
             "schema": {
@@ -898,6 +936,11 @@
                     "onUpdate": "CASCADE",
                     "seqType": "Sequelize.UUID"
                 },
+                "avatar_url": {
+                    "allowNull": true,
+                    "field": "avatar_url",
+                    "seqType": "Sequelize.STRING"
+                },
                 "deletedAt": {
                     "allowNull": true,
                     "field": "deletedAt",
@@ -920,5 +963,5 @@
     "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
     "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
     "exists": true,
-    "revision": 11
+    "revision": 12
 }
