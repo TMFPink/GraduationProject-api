@@ -6,8 +6,26 @@ const { OK, CREATED } = require('../core/success.response');
 class PostController {
   // Create a new post
   static createPost = async (req, res) => {
-    const result = await PostService.createPost(req.user.user_id, req.body);
+    const thumbnailFile = req.file; // Multer adds this
+    const result = await PostService.createPost(
+      req.user.user_id,
+      req.body,
+      thumbnailFile
+    );
     new CREATED({ message: result.message, metadata: result.post }).send(res);
+  };
+
+  // Update a post
+  static updatePost = async (req, res) => {
+    const postId = req.params.id;
+    const thumbnailFile = req.file; // Multer adds this
+    const result = await PostService.updatePost(
+      req.user.user_id,
+      postId,
+      req.body,
+      thumbnailFile
+    );
+    new OK({ message: result.message, metadata: result.post }).send(res);
   };
 
   // Get all posts (for feed)

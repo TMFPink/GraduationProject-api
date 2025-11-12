@@ -3,25 +3,115 @@
 const db = require('../models');
 const { generateUUID } = require('../helpers/helpers');
 const { NotFoundError, BadRequestError } = require('../core/error.response');
+const ImageService = require('./image.service');
+
+// Helper function to convert tags string to array
+const parseTagsInput = (tags) => {
+  if (!tags) return null;
+  if (Array.isArray(tags)) return tags;
+  if (typeof tags === 'string') {
+    return tags
+      .split(',')
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0);
+  }
+  return null;
+};
 
 class PostService {
-  static createPost = async (
-    user_id,
-    { title, content, thumbnail, media_url, tags }
-  ) => {
-    const post = await db.Post.create({
-      post_id: generateUUID(),
-      user_id,
-      title,
-      content,
-      thumbnail,
-      media_url,
-      tags,
-      upvotes: 0,
-      downvotes: 0,
-    });
+  static createPost = async (user_id, postData, thumbnailFile) => {
+    const transaction = await db.sequelize.transaction();
 
-    return { message: 'Post created successfully', post };
+    try {
+      let thumbnailUrl = null;
+
+      // Handle thumbnail upload if provided
+      if (thumbnailFile) {
+        const thumbnailResult = await ImageService.uploadThumbnail(
+          generateUUID(),
+          thumbnailFile
+        );
+        if (thumbnailResult.success) {
+          thumbnailUrl = thumbnailResult.avatarUrl;
+        }
+      }
+
+      // Parse tags from string to array
+      const parsedTags = parseTagsInput(postData.tags);
+
+      const post = await db.Post.create(
+        {
+          post_id: generateUUID(),
+          user_id,
+          title: postData.title,
+          content: postData.content,
+          thumbnail: thumbnailUrl || postData.thumbnail,
+          media_url: postData.media_url,
+          tags: parsedTags,
+          upvotes: 0,
+          downvotes: 0,
+        },
+        { transaction }
+      );
+
+      await transaction.commit();
+      return { message: 'Post created successfully', post };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
+  };
+
+  static updatePost = async (user_id, post_id, updateData, thumbnailFile) => {
+    const transaction = await db.sequelize.transaction();
+
+    try {
+      const post = await db.Post.findOne({
+        where: { post_id, user_id },
+        transaction,
+        lock: transaction.LOCK.UPDATE,
+      });
+
+      if (!post) {
+        throw new NotFoundError(
+          'Post not found or you are not authorized to update it'
+        );
+      }
+
+      const updateFields = {};
+
+      // Handle regular field updates
+      if (updateData.title) updateFields.title = updateData.title;
+      if (updateData.content) updateFields.content = updateData.content;
+      if (updateData.media_url) updateFields.media_url = updateData.media_url;
+      if (updateData.tags) updateFields.tags = parseTagsInput(updateData.tags);
+
+      // Handle thumbnail upload
+      if (thumbnailFile) {
+        // Delete old thumbnail if exists
+        if (post.thumbnail) {
+          await ImageService.deleteAvatar(post.thumbnail);
+        }
+
+        // Upload new thumbnail
+        const thumbnailResult = await ImageService.uploadThumbnail(
+          post_id,
+          thumbnailFile
+        );
+        if (thumbnailResult.success) {
+          updateFields.thumbnail = thumbnailResult.avatarUrl;
+        }
+      }
+
+      // Update post
+      await post.update(updateFields, { transaction });
+
+      await transaction.commit();
+      return { message: 'Post updated successfully', post };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
+    }
   };
 
   static getAllPosts = async (page = 1, limit = 10) => {
@@ -134,16 +224,29 @@ class PostService {
    * Delete a post (only owner can delete)
    */
   static deletePost = async (user_id, post_id) => {
-    const post = await db.Post.findByPk(post_id);
-    if (!post) throw new NotFoundError('Post not found');
+    const transaction = await db.sequelize.transaction();
 
-    if (post.user_id !== user_id) {
-      throw new BadRequestError('You are not authorized to delete this post');
+    try {
+      const post = await db.Post.findByPk(post_id, { transaction });
+      if (!post) throw new NotFoundError('Post not found');
+
+      if (post.user_id !== user_id) {
+        throw new BadRequestError('You are not authorized to delete this post');
+      }
+
+      // Delete thumbnail if exists
+      if (post.thumbnail) {
+        await ImageService.deleteAvatar(post.thumbnail);
+      }
+
+      await post.destroy({ transaction });
+      await transaction.commit();
+
+      return { message: 'Post deleted successfully' };
+    } catch (error) {
+      await transaction.rollback();
+      throw error;
     }
-
-    await post.destroy();
-
-    return { message: 'Post deleted successfully' };
   };
 }
 

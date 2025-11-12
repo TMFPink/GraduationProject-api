@@ -52,6 +52,10 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.UUID,
         allowNull: true,
       },
+      avatar_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
       deletedAt: {
         type: DataTypes.DATE,
         allowNull: true,
