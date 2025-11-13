@@ -1,3 +1,8 @@
+'use strict';
+
+// Suppress AWS SDK v2 warnings BEFORE any other imports
+require('./src/utils/suppressWarnings');
+
 const app = require('./src/app');
 const http = require('http');
 const { Server } = require('socket.io');
