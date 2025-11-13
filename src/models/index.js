@@ -52,9 +52,6 @@ if (config.use_env_variable) {
       `Missing required environment variable: ${config.use_env_variable}`
     );
   }
-  console.log(
-    `✅ Found ${config.use_env_variable}: ${envVarValue.substring(0, 50)}...`
-  );
 }
 
 let sequelize;

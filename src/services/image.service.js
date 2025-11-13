@@ -1,5 +1,8 @@
 'use strict';
 
+// Suppress AWS SDK warnings
+require('../utils/suppressWarnings');
+
 const AWS = require('aws-sdk');
 const { v4: uuidv4 } = require('uuid');
 const { BadRequestError } = require('../core/error.response');

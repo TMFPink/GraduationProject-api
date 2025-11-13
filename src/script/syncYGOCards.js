@@ -1,5 +1,9 @@
 'use strict';
 
+// Suppress AWS SDK warnings
+const path = require('path');
+require(path.join(__dirname, '..', 'utils', 'suppressWarnings'));
+
 require('dotenv').config();
 const { v4: uuidv4 } = require('uuid');
 const fetch = require('node-fetch');
