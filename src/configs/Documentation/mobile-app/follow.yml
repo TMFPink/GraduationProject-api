@@ -98,9 +98,9 @@ paths:
                       properties:
                         user_id:
                           type: string
-                        first_name:
+                        username:
                           type: string
-                        last_name:
+                        userTag:
                           type: string
                         email:
                           type: string
@@ -153,9 +153,9 @@ paths:
                       properties:
                         user_id:
                           type: string
-                        first_name:
+                        username:
                           type: string
-                        last_name:
+                        userTag:
                           type: string
                         email:
                           type: string
@@ -201,9 +201,9 @@ paths:
                       properties:
                         user_id:
                           type: string
-                        first_name:
+                        username:
                           type: string
-                        last_name:
+                        userTag:
                           type: string
                         email:
                           type: string
@@ -249,9 +249,9 @@ paths:
                       properties:
                         user_id:
                           type: string
-                        first_name:
+                        username:
                           type: string
-                        last_name:
+                        userTag:
                           type: string
                         email:
                           type: string

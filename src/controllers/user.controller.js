@@ -20,23 +20,31 @@ class UserController {
 
   update_user = async (req, res, next) => {
     const userId = req.params.id || req.user.user_id; // Allow updating own profile or by ID
-    const avatarFile = req.file; // Multer adds this
+    const avatarFile = req.files?.avatar?.[0] || null;
+    const coverFile = req.files?.cover?.[0] || null;
 
     new OK({
       message: 'User updated successfully',
-      metadata: await UserService.update(userId, req.body, avatarFile),
+      metadata: await UserService.update(
+        userId,
+        req.body,
+        avatarFile,
+        coverFile
+      ),
     }).send(res);
   };
 
   update_current_user = async (req, res, next) => {
-    const avatarFile = req.file; // Multer adds this
+    const avatarFile = req.files?.avatar?.[0] || null;
+    const coverFile = req.files?.cover?.[0] || null;
 
     new OK({
       message: 'Profile updated successfully',
       metadata: await UserService.update(
         req.user.user_id,
         req.body,
-        avatarFile
+        avatarFile,
+        coverFile
       ),
     }).send(res);
   };

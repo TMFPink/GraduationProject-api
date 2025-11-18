@@ -898,18 +898,23 @@
                     "field": "hash_password",
                     "seqType": "Sequelize.STRING"
                 },
-                "first_name": {
+                "username": {
                     "allowNull": false,
-                    "field": "first_name",
+                    "field": "username",
                     "seqType": "Sequelize.STRING"
                 },
-                "last_name": {
+                "userTag": {
                     "allowNull": false,
-                    "field": "last_name",
+                    "field": "userTag",
                     "seqType": "Sequelize.STRING"
+                },
+                "bio": {
+                    "allowNull": true,
+                    "field": "bio",
+                    "seqType": "Sequelize.TEXT"
                 },
                 "phone_number": {
-                    "allowNull": false,
+                    "allowNull": true,
                     "field": "phone_number",
                     "seqType": "Sequelize.STRING"
                 },
@@ -941,6 +946,11 @@
                     "field": "avatar_url",
                     "seqType": "Sequelize.STRING"
                 },
+                "cover_url": {
+                    "allowNull": true,
+                    "field": "cover_url",
+                    "seqType": "Sequelize.STRING"
+                },
                 "deletedAt": {
                     "allowNull": true,
                     "field": "deletedAt",
@@ -960,8 +970,8 @@
             "indexes": []
         }
     },
-    "path": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current.json",
-    "backupPath": "/Users/hong.tran/Documents/GraduationProject/GP-api/src/databases/migrations/_current_bak.json",
+    "path": "/Users/nguyenhong/Documents/GraudationProject/GraduationProject-api/src/databases/migrations/_current.json",
+    "backupPath": "/Users/nguyenhong/Documents/GraudationProject/GraduationProject-api/src/databases/migrations/_current_bak.json",
     "exists": true,
-    "revision": 12
+    "revision": 14
 }

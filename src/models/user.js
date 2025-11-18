@@ -28,17 +28,29 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      first_name: {
+      // first_name: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      // last_name: {
+      //   type: DataTypes.STRING,
+      //   allowNull: false,
+      // },
+      username: {
         type: DataTypes.STRING,
         allowNull: false,
       },
-      last_name: {
+      userTag: {
         type: DataTypes.STRING,
         allowNull: false,
+      },
+      bio: {
+        type: DataTypes.TEXT,
+        allowNull: true,
       },
       phone_number: {
         type: DataTypes.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       is_active: {
         type: DataTypes.BOOLEAN,
@@ -53,6 +65,10 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
       },
       avatar_url: {
+        type: DataTypes.STRING,
+        allowNull: true,
+      },
+      cover_url: {
         type: DataTypes.STRING,
         allowNull: true,
       },

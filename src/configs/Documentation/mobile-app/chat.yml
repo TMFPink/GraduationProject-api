@@ -119,7 +119,7 @@ components:
           type: string
           format: uuid
           description: The other user in this conversation
-        first_name:
+        username:
           type: string
         last_message:
           type: string

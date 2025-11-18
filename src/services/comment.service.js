@@ -42,7 +42,7 @@ class CommentService {
     // Fetch all comments of the post
     const comments = await db.Comment.findAll({
       where: { post_id },
-      include: [{ model: db.User, attributes: ['user_id', 'first_name'] }],
+      include: [{ model: db.User, attributes: ['user_id', 'username'] }],
       order: [['createdAt', 'ASC']],
     });
 

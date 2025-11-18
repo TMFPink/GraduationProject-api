@@ -145,6 +145,79 @@ class ImageService {
       );
     }
   }
+
+  async uploadCover(userId, file) {
+    try {
+      // Validate file type
+      const allowedMimes = [
+        'image/jpeg',
+        'image/jpg',
+        'image/png',
+        'image/webp',
+      ];
+      if (!allowedMimes.includes(file.mimetype)) {
+        throw new BadRequestError(
+          'Invalid file type. Only JPEG, PNG, and WebP are allowed.'
+        );
+      }
+
+      // Validate file size (max 10MB for covers)
+      const maxSize = 10 * 1024 * 1024; // 10MB
+      if (file.size > maxSize) {
+        throw new BadRequestError('File size too large. Maximum size is 10MB.');
+      }
+
+      // Generate unique filename
+      const fileExtension = file.originalname.split('.').pop().toLowerCase();
+      const fileName = `${userId}_cover_${uuidv4()}.${fileExtension}`;
+      const key = `covers/${fileName}`;
+
+      // Upload to R2
+      const uploadResult = await this.R2.upload({
+        Bucket: this.bucketName,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ACL: 'public-read', // Make publicly accessible
+      }).promise();
+
+      // Return the public URL
+      const coverUrl = `${this.baseUrl}/${key}`;
+      return {
+        success: true,
+        coverUrl: coverUrl, // Keep consistent interface
+        key,
+      };
+    } catch (error) {
+      if (error instanceof BadRequestError) {
+        throw error;
+      }
+      console.error('Cover upload error:', error);
+      throw new BadRequestError('Failed to upload cover. Please try again.');
+    }
+  }
+
+  async deleteCover(coverUrl) {
+    try {
+      if (!coverUrl || !coverUrl.includes(this.baseUrl)) {
+        return { success: true }; // Nothing to delete or not our URL
+      }
+
+      // Extract key from URL
+      const key = coverUrl.replace(`${this.baseUrl}/`, '');
+
+      await this.R2.deleteObject({
+        Bucket: this.bucketName,
+        Key: key,
+      }).promise();
+
+      return { success: true };
+    } catch (error) {
+      console.error('Cover deletion error:', error);
+      // Don't throw error for deletion failures to avoid blocking user updates
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 module.exports = new ImageService();

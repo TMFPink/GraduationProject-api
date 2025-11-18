@@ -13,13 +13,7 @@ const JWT = require('jsonwebtoken');
 const UserService = require('../services/user.service');
 
 class AuthService {
-  static signUp = async ({
-    first_name,
-    last_name,
-    email,
-    password,
-    phone_number,
-  }) => {
+  static signUp = async ({ email, username, userTag, password }) => {
     // setp1: check if email is already registered
     const isEmailExists = await db.User.findOne(
       { where: { email: email } },
@@ -27,6 +21,20 @@ class AuthService {
     );
     if (isEmailExists)
       throw new ConflictRequestError('Email already registered!');
+
+    const isUserTagExists = await db.User.findOne(
+      { where: { userTag: userTag } },
+      { raw: true }
+    );
+    if (isUserTagExists)
+      throw new ConflictRequestError('UserTag already registered!');
+
+    const isUsernameExists = await db.User.findOne(
+      { where: { username: username } },
+      { raw: true }
+    );
+    if (isUsernameExists)
+      throw new ConflictRequestError('Username already registered!');
 
     // step 2: has password
     const passwordHash = await bcrypt.hash(password, 10);
@@ -46,9 +54,8 @@ class AuthService {
     if (!tokens) throw new ConflictRequestError('Failed to create tokens!');
     const newUser = await UserService.create({
       user_id,
-      first_name,
-      last_name,
-      phone_number,
+      username,
+      userTag,
       email,
       hash_password: passwordHash,
       role_id,

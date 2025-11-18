@@ -16,11 +16,10 @@ module.exports = {
     for (let i = 1; i <= 10; i++) {
       users.push({
         user_id: uuidv4(),
-        first_name: `User-${i}`,
-        last_name: `Test${i}`,
+        username: `user${i}`,
+        userTag: `tag${i}`,
         email: `user${i}@example.com`,
         hash_password: await bcrypt.hash('Password123', 10),
-        phone_number: `09000000${i}`,
         role_id: userRoleId,
         createdAt: new Date(),
         updatedAt: new Date()
