@@ -8,11 +8,10 @@ const ImageService = require('./image.service');
 class UserService {
   static create = async ({
     user_id,
-    first_name,
-    last_name,
+    username,
+    usertag,
     email,
     hash_password,
-    phone_number,
     role_name = 'user',
   }) => {
     // t sửa password thành hash_password để test
@@ -24,11 +23,10 @@ class UserService {
     if (!role_id) throw new BadRequestError('role id not found');
     const user = await db.User.create({
       user_id: user_id,
-      first_name,
-      last_name,
+      username,
+      usertag,
       email,
       hash_password,
-      phone_number,
       role_id,
     });
     if (!user) {
@@ -85,12 +83,17 @@ class UserService {
 
     return await db.User.findAll({
       where,
-      attributes: ['user_id', 'first_name', 'last_name', 'email'],
+      attributes: ['user_id', 'username', 'userTag', 'email'],
       raw: true,
     });
   };
 
-  static update = async (user_id, updateData, avatarFile = null) => {
+  static update = async (
+    user_id,
+    updateData,
+    avatarFile = null,
+    coverFile = null
+  ) => {
     const transaction = await db.sequelize.transaction();
 
     try {
@@ -107,9 +110,8 @@ class UserService {
       const updateFields = {};
 
       // Handle regular field updates
-      if (updateData.first_name)
-        updateFields.first_name = updateData.first_name;
-      if (updateData.last_name) updateFields.last_name = updateData.last_name;
+      if (updateData.username) updateFields.username = updateData.username;
+      if (updateData.userTag) updateFields.userTag = updateData.userTag;
       if (updateData.email) updateFields.email = updateData.email;
       if (updateData.phone_number)
         updateFields.phone_number = updateData.phone_number;
@@ -148,6 +150,19 @@ class UserService {
         }
       }
 
+      if (coverFile) {
+        // Delete old cover if exists
+        if (user.cover_url) {
+          await ImageService.deleteCover(user.cover_url);
+        }
+
+        // Upload new cover
+        const coverResult = await ImageService.uploadCover(user_id, coverFile);
+        if (coverResult.success) {
+          updateFields.cover_url = coverResult.avatarUrl;
+        }
+      }
+
       // Update user
       const [affectedRows] = await db.User.update(updateFields, {
         where: { user_id },
@@ -165,11 +180,12 @@ class UserService {
         where: { user_id },
         attributes: [
           'user_id',
-          'first_name',
-          'last_name',
+          'username',
+          'userTag',
           'email',
           'phone_number',
           'avatar_url',
+          'cover_url',
         ],
         raw: true,
       });
@@ -192,7 +208,7 @@ class UserService {
   static get_basic_infor = async (user_id) => {
     const user = await db.User.findOne({
       where: { user_id },
-      attributes: ['first_name', 'last_name', 'email', 'avatar_url'],
+      attributes: ['email', 'username', 'userTag', 'avatar_url', 'cover_url'],
     });
 
     if (!user) {
@@ -200,9 +216,11 @@ class UserService {
     }
 
     return {
-      name: user.first_name + ' ' + user.last_name,
+      username: user.username,
+      userTag: user.userTag,
       email: user.email,
       avatar_url: user.avatar_url,
+      cover_url: user.cover_url,
       user_id,
     };
   };
@@ -219,11 +237,12 @@ class UserService {
       // Include avatar_url in default fields
       options.attributes = [
         'user_id',
-        'first_name',
-        'last_name',
+        'username',
+        'userTag',
         'email',
         'phone_number',
         'avatar_url',
+        'cover_url',
       ];
     }
 

@@ -46,15 +46,15 @@ class ChatService {
     const userIds = partners.map((p) => p.user_id);
     const users = await db.User.findAll({
       where: { user_id: userIds },
-      attributes: ['user_id', 'first_name', 'last_name'],
+      attributes: ['user_id', 'username', 'userTag'],
     });
 
     const result = partners.map((p) => {
       const user = users.find((u) => u.user_id === p.user_id);
       return {
         ...p,
-        first_name: user?.first_name,
-        last_name: user?.last_name,
+        username: user?.username,
+        userTag: user?.userTag,
         // avatar_url: user?.avatar_url,
       };
     });

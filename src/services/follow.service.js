@@ -47,7 +47,7 @@ class FollowService {
         {
           model: db.User,
           as: 'follower',
-          attributes: ['user_id', 'first_name', 'last_name', 'email'],
+          attributes: ['user_id', 'username', 'userTag', 'email'],
         },
       ],
       limit,
@@ -75,7 +75,7 @@ class FollowService {
         {
           model: db.User,
           as: 'following',
-          attributes: ['user_id', 'first_name', 'last_name', 'email'],
+          attributes: ['user_id', 'username', 'userTag', 'email'],
         },
       ],
       limit,

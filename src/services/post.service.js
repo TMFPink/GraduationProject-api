@@ -117,7 +117,7 @@ class PostService {
   static getAllPosts = async (page = 1, limit = 10) => {
     const offset = (page - 1) * limit;
     const { count, rows } = await db.Post.findAndCountAll({
-      include: [{ model: db.User, attributes: ['user_id', 'first_name'] }],
+      include: [{ model: db.User, attributes: ['user_id', 'username'] }],
       limit,
       offset,
       order: [['createdAt', 'DESC']],
