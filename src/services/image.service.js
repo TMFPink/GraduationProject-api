@@ -185,7 +185,7 @@ class ImageService {
       const coverUrl = `${this.baseUrl}/${key}`;
       return {
         success: true,
-        avatarUrl: coverUrl, // Keep consistent interface
+        coverUrl: coverUrl, // Keep consistent interface
         key,
       };
     } catch (error) {

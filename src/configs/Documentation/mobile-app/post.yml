@@ -314,7 +314,7 @@ components:
             user_id:
               type: string
               format: uuid
-            first_name:
+            username:
               type: string
 
     PaginatedPosts:

@@ -21,7 +21,10 @@ router.get('/me', verifyToken, asyncHandler(UserController.get_current_user));
 router.put(
   '/me',
   verifyToken,
-  upload.single('avatar'),
+  upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'cover', maxCount: 1 },
+  ]),
   asyncHandler(UserController.update_current_user)
 );
 
@@ -38,7 +41,10 @@ router.get('/:id', verifyToken, asyncHandler(UserController.get_user_by_id));
 router.put(
   '/:id',
   verifyToken,
-  upload.single('avatar'),
+  upload.fields([
+    { name: 'avatar', maxCount: 1 },
+    { name: 'cover', maxCount: 1 },
+  ]),
   asyncHandler(UserController.update_user)
 );
 

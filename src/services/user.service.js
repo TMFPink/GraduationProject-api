@@ -159,10 +159,11 @@ class UserService {
         // Upload new cover
         const coverResult = await ImageService.uploadCover(user_id, coverFile);
         if (coverResult.success) {
-          updateFields.cover_url = coverResult.avatarUrl;
+          updateFields.cover_url = coverResult.coverUrl;
         }
       }
 
+      console.log('Update fields:', updateFields);
       // Update user
       const [affectedRows] = await db.User.update(updateFields, {
         where: { user_id },
