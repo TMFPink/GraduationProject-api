@@ -28,13 +28,7 @@ router.put(
   asyncHandler(UserController.update_current_user)
 );
 
-router.get(
-  '/',
-  verifyToken,
-
-  verifyRole('admin'),
-  asyncHandler(UserController.get_list_users)
-);
+router.get('/', verifyToken, asyncHandler(UserController.get_list_users));
 
 router.get('/:id', verifyToken, asyncHandler(UserController.get_user_by_id));
 
