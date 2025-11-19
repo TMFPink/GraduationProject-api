@@ -9,7 +9,7 @@ class UserService {
   static create = async ({
     user_id,
     username,
-    usertag,
+    userTag,
     email,
     hash_password,
     role_name = 'user',
@@ -24,7 +24,7 @@ class UserService {
     const user = await db.User.create({
       user_id: user_id,
       username,
-      usertag,
+      userTag,
       email,
       hash_password,
       role_id,
