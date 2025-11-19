@@ -105,6 +105,9 @@ paths:
                 username:
                   type: string
                   example: 'JohnDoe'
+                userTag:
+                  type: string
+                  example: 'johndoe123'
                 email:
                   type: string
                   format: email
@@ -192,6 +195,8 @@ paths:
                   format: binary
                   description: Avatar image file (JPEG, PNG, WebP, max 5MB)
                 username:
+                  type: string
+                userTag:
                   type: string
                 email:
                   type: string
@@ -300,6 +305,8 @@ components:
           format: uuid
         username:
           type: string
+        userTag:
+          type: string
         email:
           type: string
           format: email
@@ -310,6 +317,9 @@ components:
         username:
           type: string
           example: 'JohnDoe'
+        userTag:
+          type: string
+          example: 'johndoe123'
         email:
           type: string
           format: email
@@ -332,6 +342,7 @@ components:
       type: object
       required:
         - username
+        - userTag
         - email
         - password
         - phone_number
@@ -339,6 +350,9 @@ components:
         username:
           type: string
           example: 'JohnDoe'
+        userTag:
+          type: string
+          example: 'johndoe123'
         email:
           type: string
           format: email
