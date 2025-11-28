@@ -6,7 +6,8 @@ require('./src/utils/suppressWarnings');
 const app = require('./src/app');
 const http = require('http');
 const { Server } = require('socket.io');
-const initChatSocket = require('./src/sockets/chatSocket'); // import logic
+const { initIO } = require('./src/utils/socketSingleton');
+const initSockets = require('./src/sockets');
 
 const PORT = process.env.SERVER_PORT || 3000;
 
@@ -21,8 +22,8 @@ const io = new Server(server, {
   },
 });
 
-// initialize socket handlers
-initChatSocket(io);
+//init singleton for socket io
+initSockets(io);
 
 server.listen(PORT, () => {
   console.log(`=============Connected: ${PORT}=============`);

@@ -7,6 +7,7 @@ const {
   ConflictRequestError,
 } = require('../core/error.response');
 const { Op } = require('sequelize');
+const NotificationService = require('./notification.service');
 
 class FollowService {
   /**
@@ -31,6 +32,19 @@ class FollowService {
       follower_id,
       following_id,
     });
+
+    // Create notification
+    if (follow) {
+      const follower = await db.User.findByPk(follower_id, {
+        attributes: ['username'],
+      });
+      await NotificationService.createNotification(
+        following_id,
+        'follow',
+        `${follower.username} started following you.`,
+        follower_id
+      );
+    }
 
     return { isFollowing: true, message: 'Followed successfully', follow };
   }

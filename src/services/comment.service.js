@@ -3,6 +3,7 @@
 const db = require('../models');
 const { v4: uuidv4 } = require('uuid');
 const { NotFoundError, BadRequestError } = require('../core/error.response');
+const NotificationService = require('./notification.service');
 
 class CommentService {
   /**
@@ -15,10 +16,30 @@ class CommentService {
     const post = await db.Post.findByPk(post_id);
     if (!post) throw new NotFoundError('Post not found');
 
+    const commenter = await db.User.findByPk(user_id, {
+      attributes: ['username'],
+    });
+
     // if replying, check parent comment
     if (parent_id) {
       const parent = await db.Comment.findByPk(parent_id);
       if (!parent) throw new NotFoundError('Parent comment not found');
+
+      // Notify parent comment owner
+      await NotificationService.createNotification(
+        parent.user_id,
+        'reply',
+        `${commenter.username} replied to your comment.`,
+        user_id
+      );
+    } else {
+      // Notify post owner
+      await NotificationService.createNotification(
+        post.user_id,
+        'comment',
+        `${commenter.username} commented on your post.`,
+        user_id
+      );
     }
 
     const comment = await db.Comment.create({
