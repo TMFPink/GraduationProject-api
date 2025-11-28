@@ -28,6 +28,7 @@ router.put(
   asyncHandler(PostController.updatePost)
 );
 router.get('/', verifyToken, asyncHandler(PostController.getAllPosts));
+router.get('/:id', verifyToken, asyncHandler(PostController.getPostById));
 router.get(
   '/user/:id',
   verifyToken,

@@ -49,6 +49,16 @@ class PostController {
     }).send(res);
   };
 
+  // Get a single post by ID
+  static getPostById = async (req, res) => {
+    const postId = req.params.id;
+    const result = await PostService.getPostById(postId);
+    new OK({
+      message: 'Post fetched successfully',
+      metadata: result,
+    }).send(res);
+  };
+
   static upvotePost = async (req, res) => {
     const postId = req.params.id;
     const result = await PostService.votePost(

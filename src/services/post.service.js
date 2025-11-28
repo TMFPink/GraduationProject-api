@@ -4,6 +4,7 @@ const db = require('../models');
 const { generateUUID } = require('../helpers/helpers');
 const { NotFoundError, BadRequestError } = require('../core/error.response');
 const ImageService = require('./image.service');
+const NotificationService = require('./notification.service');
 
 // Helper function to convert tags string to array
 const parseTagsInput = (tags) => {
@@ -138,6 +139,14 @@ class PostService {
     return { total: count, page, limit, posts: rows };
   };
 
+  static getPostById = async (post_id) => {
+    const post = await db.Post.findByPk(post_id, {
+      include: [{ model: db.User, attributes: ['user_id', 'username'] }],
+    });
+    if (!post) throw new NotFoundError('Post not found');
+    return post;
+  };
+
   /**
    * Vote on a post (toggle/switch-safe).
    * type === 'upvote' or 'downvote'
@@ -160,8 +169,7 @@ class PostService {
         lock: t.LOCK.UPDATE,
       });
 
-      // Helper to safely decrement (no negatives)
-      const safeDec = (n) => (n > 0 ? n - 1 : 0);
+      const isSelfVote = post.user_id === user_id;
 
       if (!existing) {
         // create vote
@@ -177,6 +185,17 @@ class PostService {
 
         if (voteValue === 1) post.upvotes = (post.upvotes || 0) + 1;
         else post.downvotes = (post.downvotes || 0) + 1;
+
+        if (!isSelfVote) {
+          const voter = await db.User.findByPk(user_id, {
+            attributes: ['username'],
+          });
+          await NotificationService.createNotification(
+            post.user_id,
+            type,
+            `${voter.username} ${type}d your post.`
+          );
+        }
 
         await post.save({ transaction: t });
         await t.commit();
@@ -209,6 +228,17 @@ class PostService {
       } else {
         post.downvotes = (post.downvotes || 0) + 1;
         post.upvotes = Math.max(0, (post.upvotes || 0) - 1);
+      }
+
+      if (!isSelfVote) {
+        const voter = await db.User.findByPk(user_id, {
+          attributes: ['username'],
+        });
+        await NotificationService.createNotification(
+          post.user_id,
+          type,
+          `${voter.username} ${type}d your post.`
+        );
       }
 
       await post.save({ transaction: t });
