@@ -79,6 +79,9 @@ class CommentService {
     const comment = await db.Comment.findByPk(comment_id);
     if (!comment) throw new NotFoundError('Comment not found');
 
+    // Do not notify if user votes on their own comment
+    const isSelfVote = comment.user_id === user_id;
+
     // check if user already voted
     const existing = await db.CommentVote.findOne({
       where: { user_id, comment_id },
@@ -102,6 +105,17 @@ class CommentService {
       await db.CommentVote.create({ user_id, comment_id, type });
       if (type === 'upvote') comment.upvotes++;
       else comment.downvotes++;
+
+      if (!isSelfVote) {
+        const voter = await db.User.findByPk(user_id, {
+          attributes: ['username'],
+        });
+        await NotificationService.createNotification(
+          comment.user_id,
+          type,
+          `${voter.username} ${type}d your comment.`
+        );
+      }
     }
 
     await comment.save();

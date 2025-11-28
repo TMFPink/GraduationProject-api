@@ -91,6 +91,34 @@ paths:
           description: Unauthorized
 
   /posts/{id}:
+    get:
+      summary: Get a single post
+      description: Retrieve a post by its ID
+      tags: [Post]
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Post retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: 'Post fetched successfully'
+                  metadata:
+                    $ref: '#/components/schemas/Post'
+        '404':
+          description: Post not found
     put:
       summary: Update a post
       description: Update an existing post with optional thumbnail change
