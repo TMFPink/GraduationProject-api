@@ -54,6 +54,9 @@ class CollectionService {
       case 'pkm':
         card_domain_id = '22222222-2222-2222-2222-222222222222';
         break;
+      case 'rb':
+        card_domain_id = '33333333-3333-3333-3333-333333333333';
+        break;
       default:
         throw new BadRequestError('Invalid card type');
     }

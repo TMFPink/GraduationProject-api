@@ -222,7 +222,7 @@ components:
           example: Fire Deck
         card_type:
           type: string
-          enum: [ygo, pkm]
+          enum: [ygo, pkm, rb]
           example: ygo
         cards:
           type: array

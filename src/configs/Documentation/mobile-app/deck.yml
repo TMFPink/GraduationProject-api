@@ -168,7 +168,7 @@ components:
         name: { type: string, example: 'My Fire Deck' }
         card_type:
           type: string
-          enum: [ygo, pkm]
+          enum: [ygo, pkm, rb]
           example: 'ygo'
           description: "Card type - 'ygo' for Yu-Gi-Oh!, 'pkm' for Pokemon"
         format:

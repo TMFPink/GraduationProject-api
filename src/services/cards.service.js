@@ -19,6 +19,8 @@ class CardService {
       where.card_domain_id = '11111111-1111-1111-1111-111111111111';
     } else if (domain == 'pkm') {
       where.card_domain_id = '22222222-2222-2222-2222-222222222222';
+    } else if (domain === 'rb') {
+      where.card_domain_id = '33333333-3333-3333-3333-333333333333';
     }
 
     const offset = (page - 1) * limit;
@@ -90,6 +92,8 @@ class CardService {
       where.card_domain_id = '11111111-1111-1111-1111-111111111111';
     } else if (domain === 'pkm') {
       where.card_domain_id = '22222222-2222-2222-2222-222222222222';
+    } else if (domain === 'rb') {
+      where.card_domain_id = '33333333-3333-3333-3333-333333333333';
     }
 
     // Build meta filters dynamically
@@ -168,6 +172,8 @@ class CardService {
       where.card_domain_id = '11111111-1111-1111-1111-111111111111';
     } else if (domain === 'pkm') {
       where.card_domain_id = '22222222-2222-2222-2222-222222222222';
+    } else if (domain === 'rb') {
+      where.card_domain_id = '33333333-3333-3333-3333-333333333333';
     }
 
     const cards = await db.Card.findAll({

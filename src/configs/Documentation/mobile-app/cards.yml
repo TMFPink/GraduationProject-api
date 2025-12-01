@@ -19,7 +19,7 @@ paths:
           name: domain
           schema:
             type: string
-            enum: [ygo, pkm]
+            enum: [ygo, pkm, rb]
             example: ygo
           description: 'Domain to filter cards (default: ygo)'
         - in: query
@@ -109,7 +109,7 @@ paths:
           schema:
             type: string
             example: ygo
-          description: 'Domain of cards (ygo or pkm)'
+          description: 'Domain of cards (ygo, pkm, rb)'
         - in: query
           name: page
           schema:

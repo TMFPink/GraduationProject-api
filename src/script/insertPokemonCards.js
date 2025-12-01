@@ -51,6 +51,9 @@ async function main() {
   await sequelize.authenticate();
   console.log('Connected to database.');
 
+  const queryInterface = sequelize.getQueryInterface(); // Moved here
+  const transaction = await sequelize.transaction();
+
   console.log('Using image base URL:', BASE_URL);
   const tcgdex = new TCGdex('en'); // English
   console.log('Fetching Pokémon card summaries from TCGdex...');
@@ -83,7 +86,6 @@ async function main() {
     `Cleared ${results.rowCount || 0} existing YGO cards and their images`
   );
 
-  const queryInterface = sequelize.getQueryInterface();
   let totalCardsInserted = 0;
   let totalImagesInserted = 0;
 
