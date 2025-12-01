@@ -31,7 +31,15 @@ function convertUrl(oldUrl, type = 'original') {
   let folder = 'original';
   if (type === 'small') folder = 'low_resolution';
   else if (type === 'cropped') folder = 'cropped';
-  return `${NEW_BASE_URL}/${folder}/${key}`;
+
+  let newUrl = `${NEW_BASE_URL}/${folder}/${key}`;
+
+  // Convert .webp to .jpg if present
+  if (newUrl.endsWith('.webp')) {
+    newUrl = newUrl.replace(/\.webp$/i, '.jpg');
+  }
+
+  return newUrl;
 }
 
 /* =========================
