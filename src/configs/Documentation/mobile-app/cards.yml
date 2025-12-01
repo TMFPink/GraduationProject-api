@@ -344,3 +344,81 @@ components:
         regulationMark:
           type: string
           example: E
+
+    # ----------------------------
+    # Riftbound Metadata Model
+    # ----------------------------
+    Riftbound_MetaData:
+      type: object
+      description: Metadata structure for Riftbound cards
+      properties:
+        source_id:
+          type: string
+          example: 12345
+        name:
+          type: string
+          example: Riftbound Warrior
+        type:
+          type: string
+          example: Creature
+        super:
+          type: string
+          example: Legendary
+        description:
+          type: string
+          example: A powerful warrior from the Riftbound realm.
+        energy:
+          type: integer
+          example: 5
+        might:
+          type: integer
+          example: 8
+        power:
+          type: integer
+          example: 10
+        tags:
+          type: array
+          items:
+            type: string
+          example: ['Warrior', 'Legendary']
+        colors:
+          type: array
+          items:
+            type: object
+            properties:
+              colorId:
+                type: string
+                example: c1
+              name:
+                type: string
+                example: Red
+              hexCode:
+                type: string
+                example: #FF0000
+        variants_count:
+          type: integer
+          example: 3
+        variants_summary:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                example: v1
+              variantNumber:
+                type: integer
+                example: 1
+              rarity:
+                type: string
+                example: Rare
+              imageUrl:
+                type: string
+                example: https://cdn.example.com/original/v1.jpg
+              setName:
+                type: string
+                example: Riftbound Set 1
+              releaseDate:
+                type: string
+                format: date
+                example: 2023-01-01
