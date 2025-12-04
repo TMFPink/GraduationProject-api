@@ -7,6 +7,8 @@ info:
 tags:
   - name: Owned Card
     description: Manage user's owned cards - add, retrieve, and remove cards from personal collection.
+  - name: Feature Card
+    description: Manage user's feature cards - cards displayed on the user's profile.
 
 paths:
   /owned-cards:
@@ -94,16 +96,66 @@ paths:
         '404':
           description: Owned card not found
 
+  /owned-cards/feature:
+    get:
+      tags: [Feature Card]
+      summary: Get user's feature cards
+      description: Retrieve the list of feature cards for the authenticated user, ordered by position.
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Feature cards retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetFeatureCardsResponse'
+        '401':
+          description: Unauthorized user
+
+    put:
+      tags: [Feature Card]
+      summary: Set/replace user's feature cards
+      description: Set or replace the entire list of feature cards for the authenticated user. This is an atomic operation.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetFeatureCardsRequest'
+      responses:
+        '200':
+          description: Feature cards updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SetFeatureCardsResponse'
+        '400':
+          description: Bad request (e.g., duplicates, invalid payload)
+        '401':
+          description: Unauthorized user
+        '404':
+          description: One or more owned cards not found
+
 components:
   schemas:
     # ---------- Core Models ----------
     OwnedCardGroup:
       type: object
       properties:
+        owned_card_ids:
+          type: array
+          items:
+            type: string
+          example:
+            - '88888888-8888-8888-8888-888888888888'
+            - '88888888-8888-8888-8888-888888888889'
         card_id:
           type: string
           example: 33333333-3333-3333-3333-333333333333
-        domain:
+        card_domain_id:
           type: string
           example: ygo
         quantity:
@@ -129,6 +181,37 @@ components:
               type: string
               example: ygo
 
+    FeatureCard:
+      type: object
+      properties:
+        feature_card_id:
+          type: string
+          example: '99999999-9999-9999-9999-999999999999'
+        position:
+          type: integer
+          example: 1
+        owned_card_id:
+          type: string
+          example: '88888888-8888-8888-8888-888888888888'
+        card:
+          type: object
+          properties:
+            card_id:
+              type: string
+              example: '33333333-3333-3333-3333-333333333333'
+            name:
+              type: string
+              example: 'Blue-Eyes White Dragon'
+            rarity:
+              type: string
+              example: 'Ultra Rare'
+            image_normal_url:
+              type: string
+              example: 'https://example.com/card-image.jpg'
+        card_domain_id:
+          type: string
+          example: '11111111-1111-1111-1111-111111111111'
+
     # ---------- Requests ----------
     AddOwnedCardRequest:
       type: object
@@ -151,6 +234,34 @@ components:
           type: string
           example: 11111111-1111-1111-1111-111111111111
           description: The domain ID for the card to remove
+
+    SetFeatureCardsRequest:
+      type: object
+      required: [feature_cards]
+      properties:
+        feature_cards:
+          type: array
+          description: An array of feature card objects to set.
+          items:
+            type: object
+            required: [owned_card_id, position]
+            properties:
+              owned_card_id:
+                type: string
+                example: '88888888-8888-8888-8888-888888888888'
+                description: The ID of the owned card to feature.
+              position:
+                type: integer
+                example: 1
+                description: The display order of the feature card.
+      example:
+        feature_cards:
+          - owned_card_id: 'owned-card-uuid-1'
+            position: 1
+          - owned_card_id: 'owned-card-uuid-2'
+            position: 2
+          - owned_card_id: 'owned-card-uuid-3'
+            position: 3
 
     # ---------- Responses ----------
     AddOwnedCardResponse:
@@ -197,6 +308,43 @@ components:
         message:
           type: string
           example: Card removed from owned cards successfully
+
+    GetFeatureCardsResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Feature cards retrieved successfully
+        metadata:
+          type: object
+          properties:
+            featureCards:
+              type: array
+              items:
+                $ref: '#/components/schemas/FeatureCard'
+
+    SetFeatureCardsResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Feature cards updated successfully
+        metadata:
+          type: object
+          properties:
+            featureCards:
+              type: array
+              items:
+                type: object
+                properties:
+                  feature_card_id:
+                    type: string
+                  user_id:
+                    type: string
+                  owned_card_id:
+                    type: string
+                  position:
+                    type: integer
 
   # ---------- Security ----------
   securitySchemes:

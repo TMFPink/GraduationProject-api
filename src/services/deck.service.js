@@ -141,8 +141,42 @@ class DeckService {
     return { message: 'Deck updated successfully', deck };
   };
 
+  // --------------------------
+  // Helper: get first 3 images
+  // --------------------------
+  static _getFirstThreeCardImages = async (deck_id) => {
+    const deckCards = await db.DeckCard.findAll({
+      where: { deck_id },
+      include: [
+        {
+          model: db.Card,
+          attributes: ['image_normal_url'],
+        },
+      ],
+      // "First" is arbitrary here; using deck_card_id ascending
+      order: [['deck_card_id', 'ASC']],
+      limit: 3,
+    });
+
+    const images = deckCards
+      .map((dc) => dc.Card && dc.Card.image_normal_url)
+      .filter(Boolean);
+
+    // Ensure we always return length 3 (pad with nulls)
+    while (images.length < 3) {
+      images.push(null);
+    }
+
+    return {
+      first_card_image: images[0],
+      second_card_image: images[1],
+      third_card_image: images[2],
+    };
+  };
+
   /**
    * Get all decks for user
+   * + add 3 extra fields: first_card_image, second_card_image, third_card_image
    */
   static getDecks = async (user_id, page = 1, limit = 20) => {
     const offset = (page - 1) * limit;
@@ -154,11 +188,24 @@ class DeckService {
       include: [{ model: db.CardDomain, as: 'domain' }],
     });
 
+    // Attach 3 preview images for each deck
+    const decksWithImages = await Promise.all(
+      rows.map(async (deck) => {
+        const images = await this._getFirstThreeCardImages(deck.deck_id);
+
+        // toJSON() so we don't mutate the Sequelize instance itself
+        return {
+          ...deck.toJSON(),
+          ...images,
+        };
+      })
+    );
+
     return {
       total: count,
       page: parseInt(page),
       limit: parseInt(limit),
-      decks: rows,
+      decks: decksWithImages,
     };
   };
 
@@ -179,7 +226,16 @@ class DeckService {
 
     if (!deck) throw new NotFoundError('Deck not found or unauthorized');
 
-    return { message: 'Deck retrieved successfully', deck };
+    // OPTIONAL: also add the 3 preview images on detail
+    const images = await this._getFirstThreeCardImages(deck_id);
+
+    return {
+      message: 'Deck retrieved successfully',
+      deck: {
+        ...deck.toJSON(),
+        ...images,
+      },
+    };
   };
 
   /**
