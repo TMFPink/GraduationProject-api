@@ -58,6 +58,15 @@ class CollectionController {
     }).send(res);
   };
 
+  getCollectionsByUser = async (req, res, next) => {
+    const { user_id, page = 1, limit = 20 } = req.query;
+    console.log('userod', user_id);
+    new OK({
+      message: 'Collections retrieved successfully',
+      metadata: await CollectionService.getCollections(user_id, page, limit),
+    }).send(res);
+  };
+
   getCollectionDetail = async (req, res, next) => {
     new OK({
       message: 'Collection detail retrieved successfully',

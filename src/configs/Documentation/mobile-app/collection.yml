@@ -167,6 +167,42 @@ paths:
         '404':
           description: Collection not found or unauthorized
 
+  /collections/user:
+    get:
+      tags: [Collection]
+      summary: Get collections by user ID
+      description: Retrieve collections belonging to a specific user, paginated.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+            description: The ID of the user whose collections are to be retrieved
+        - name: page
+          in: query
+          schema:
+            type: integer
+            example: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 20
+          description: Number of collections per page
+      responses:
+        '200':
+          description: Collections retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetCollectionsResponse'
+        '404':
+          description: User not found or unauthorized
+
 components:
   schemas:
     # ---------- Core Models ----------

@@ -19,6 +19,12 @@ router.delete(
   asyncHandler(OwnedCardController.removeOwnedCard)
 );
 
+router.get(
+  '/user',
+  verifyToken,
+  asyncHandler(OwnedCardController.getOwnedCardsByUser)
+);
+
 // =========================================================
 // FEATURE CARDS
 // =========================================================

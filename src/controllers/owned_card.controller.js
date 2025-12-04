@@ -22,10 +22,19 @@ class OwnedCardController {
       message: 'Owned cards retrieved successfully',
       metadata: await OwnedCardService.getOwnedCards(
         user_id,
-        domain,
         page,
-        limit
+        limit,
+        domain
       ),
+    }).send(res);
+  };
+
+  getOwnedCardsByUser = async (req, res, next) => {
+    const { user_id, page = 1, limit = 20 } = req.query;
+
+    new OK({
+      message: 'Owned cards retrieved successfully',
+      metadata: await OwnedCardService.getOwnedCards(user_id, page, limit),
     }).send(res);
   };
 

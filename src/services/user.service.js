@@ -249,7 +249,39 @@ class UserService {
 
     const user = await db.User.findOne(options);
     if (!user) throw new BadRequestError('User not found');
-    return user;
+
+    // Fetch feature cards for the user
+    const featureCards = await db.FeatureCard.findAll({
+      where: { user_id },
+      include: [
+        {
+          model: db.OwnedCard,
+          include: [
+            {
+              model: db.Card,
+              attributes: ['card_id', 'name', 'rarity', 'image_normal_url'],
+            },
+          ],
+        },
+      ],
+      order: [['position', 'ASC']],
+      raw: true,
+      nest: true,
+    });
+
+    // Shape the feature cards response
+    const formattedFeatureCards = featureCards.map((fc) => ({
+      feature_card_id: fc.feature_card_id,
+      position: fc.position,
+      owned_card_id: fc.owned_card_id,
+      card: fc.OwnedCard?.Card || null,
+      card_domain_id: fc.OwnedCard?.card_domain_id || null,
+    }));
+
+    return {
+      ...user,
+      featureCards: formattedFeatureCards,
+    };
   };
 }
 
