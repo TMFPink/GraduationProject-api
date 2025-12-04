@@ -17,6 +17,11 @@ router.post(
   verifyToken,
   asyncHandler(CollectionController.createCollection)
 );
+router.get(
+  '/user',
+  verifyToken,
+  asyncHandler(CollectionController.getCollectionsByUser)
+);
 router.get('/', verifyToken, asyncHandler(CollectionController.getCollections));
 router.get(
   '/:id',

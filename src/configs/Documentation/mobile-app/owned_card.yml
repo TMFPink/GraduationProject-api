@@ -139,6 +139,44 @@ paths:
         '404':
           description: One or more owned cards not found
 
+  /owned-cards/user:
+    get:
+      tags: [Owned Card]
+      summary: Get owned cards by user ID
+      description: Retrieve all cards owned by a specific user, grouped by card with quantities, paginated.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The ID of the user whose owned cards are being retrieved
+        - name: page
+          in: query
+          schema:
+            type: integer
+            example: 1
+          description: Page number
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            example: 20
+          description: Number of unique cards per page
+      responses:
+        '200':
+          description: Owned cards retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GetOwnedCardsResponse'
+        '401':
+          description: Unauthorized user
+        '404':
+          description: User not found
+
 components:
   schemas:
     # ---------- Core Models ----------

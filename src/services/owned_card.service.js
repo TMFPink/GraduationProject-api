@@ -20,7 +20,7 @@ class OwnedCardService {
     } else if (domain == 'pkm') {
       card_domain_id = '22222222-2222-2222-2222-222222222222';
     } else if (domain === 'rb') {
-      where.card_domain_id = '33333333-3333-3333-3333-333333333333';
+      card_domain_id = '33333333-3333-3333-3333-333333333333';
     }
 
     // Create the owned card record
@@ -40,9 +40,8 @@ class OwnedCardService {
   /**
    * Get all owned cards for a user, grouped by card with quantities
    */
-  static getOwnedCards = async (user_id, domain, page = 1, limit = 20) => {
+  static getOwnedCards = async (user_id, page = 1, limit = 20, domain) => {
     const offset = (page - 1) * limit;
-
     const whereClause = { user_id };
     if (domain) {
       if (domain == 'ygo') {
@@ -50,7 +49,7 @@ class OwnedCardService {
       } else if (domain == 'pkm') {
         whereClause.card_domain_id = '22222222-2222-2222-2222-222222222222';
       } else if (domain === 'rb') {
-        where.card_domain_id = '33333333-3333-3333-3333-333333333333';
+        whereClause.card_domain_id = '33333333-3333-3333-3333-333333333333';
       }
     }
 
