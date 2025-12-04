@@ -107,23 +107,74 @@ class CollectionService {
     return { message: 'Collection updated successfully', collection };
   };
 
+  // -----------------------------------------
+  // Helper: get first 3 card images in a collection
+  // -----------------------------------------
+  static _getFirstThreeCardImages = async (collection_id) => {
+    const collectionCards = await db.CollectionCard.findAll({
+      where: { collection_id },
+      include: [
+        {
+          model: db.Card,
+          attributes: ['image_normal_url'],
+        },
+      ],
+      order: [['collection_card_id', 'ASC']], // "first" cards
+      limit: 3,
+    });
+
+    const images = collectionCards
+      .map((cc) => cc.Card && cc.Card.image_normal_url)
+      .filter(Boolean);
+
+    while (images.length < 3) {
+      images.push(null);
+    }
+
+    return {
+      first_card_image: images[0],
+      second_card_image: images[1],
+      third_card_image: images[2],
+    };
+  };
+
   /**
    * Get all collections for a user
+   * + 3 preview image fields
    */
   static getCollections = async (user_id, page = 1, limit = 20) => {
     const offset = (page - 1) * limit;
     const { count, rows } = await db.Collection.findAndCountAll({
       where: { user_id },
       include: [{ model: db.CardDomain }],
-      limit,
-      offset,
+      limit: parseInt(limit),
+      offset: parseInt(offset),
       order: [['createdAt', 'DESC']],
     });
-    return { total: count, page, limit, collections: rows };
+
+    const collectionsWithImages = await Promise.all(
+      rows.map(async (collection) => {
+        const images = await this._getFirstThreeCardImages(
+          collection.collection_id
+        );
+        return {
+          ...collection.toJSON(),
+          ...images,
+        };
+      })
+    );
+
+    return {
+      total: count,
+      page: parseInt(page),
+      limit: parseInt(limit),
+      collections: collectionsWithImages,
+    };
   };
 
   /**
    * Get one collection with its cards
+   * + 3 preview images
    */
   static getCollectionDetail = async (collection_id, user_id) => {
     const collection = await db.Collection.findOne({
@@ -145,7 +196,15 @@ class CollectionService {
     if (!collection)
       throw new NotFoundError('Collection not found or unauthorized');
 
-    return { message: 'Collection retrieved successfully', collection };
+    const images = await this._getFirstThreeCardImages(collection_id);
+
+    return {
+      message: 'Collection retrieved successfully',
+      collection: {
+        ...collection.toJSON(),
+        ...images,
+      },
+    };
   };
 
   /**
@@ -165,5 +224,4 @@ class CollectionService {
   };
 }
 
-module.exports = CollectionService;
 module.exports = CollectionService;

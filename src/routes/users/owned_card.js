@@ -19,4 +19,22 @@ router.delete(
   asyncHandler(OwnedCardController.removeOwnedCard)
 );
 
+// =========================================================
+// FEATURE CARDS
+// =========================================================
+
+// Get feature cards
+router.get(
+  '/feature',
+  verifyToken,
+  asyncHandler(OwnedCardController.getFeatureCards)
+);
+
+// Set/replace feature cards
+router.put(
+  '/feature',
+  verifyToken,
+  asyncHandler(OwnedCardController.setFeatureCards)
+);
+
 module.exports = router;

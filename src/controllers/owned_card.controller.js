@@ -38,6 +38,29 @@ class OwnedCardController {
       metadata: await OwnedCardService.removeOwnedCard(user_id, card_id),
     }).send(res);
   };
+
+  // =========================================================
+  // FEATURE CARDS
+  // =========================================================
+
+  getFeatureCards = async (req, res, next) => {
+    const user_id = req.user.user_id;
+
+    new OK({
+      message: 'Feature cards retrieved successfully',
+      metadata: await OwnedCardService.getFeatureCards(user_id),
+    }).send(res);
+  };
+
+  setFeatureCards = async (req, res, next) => {
+    const user_id = req.user.user_id;
+    const { feature_cards } = req.body;
+
+    new OK({
+      message: 'Feature cards updated successfully',
+      metadata: await OwnedCardService.setFeatureCards(user_id, feature_cards),
+    }).send(res);
+  };
 }
 
 module.exports = new OwnedCardController();
