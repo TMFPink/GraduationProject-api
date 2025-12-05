@@ -219,6 +219,26 @@ components:
               type: string
               example: ygo
 
+    OwnedCard:
+      type: object
+      properties:
+        owned_card_id:
+          type: string
+          example: '88888888-8888-8888-8888-888888888888'
+        user_id:
+          type: string
+          example: '77777777-7777-7777-7777-777777777777'
+        card_id:
+          type: string
+          example: '33333333-3333-3333-3333-333333333333'
+        card_domain_id:
+          type: string
+          example: 'ygo'
+        created_at:
+          type: string
+          format: date-time
+          example: '2023-01-01T12:00:00Z'
+
     FeatureCard:
       type: object
       properties:
@@ -246,9 +266,9 @@ components:
             image_normal_url:
               type: string
               example: 'https://example.com/card-image.jpg'
-        card_domain_id:
-          type: string
-          example: '11111111-1111-1111-1111-111111111111'
+            card_domain_id:
+              type: string
+              example: 'ygo'
 
     # ---------- Requests ----------
     AddOwnedCardRequest:
