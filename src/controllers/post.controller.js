@@ -31,7 +31,8 @@ class PostController {
   // Get all posts (for feed)
   static getAllPosts = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
-    const result = await PostService.getAllPosts(page, limit);
+    const current_user_id = req.user ? req.user.user_id : null;
+    const result = await PostService.getAllPosts(page, limit, current_user_id);
     new OK({
       message: 'All posts fetched successfully',
       metadata: result,
@@ -42,7 +43,13 @@ class PostController {
   static getPostsByUser = async (req, res) => {
     const userId = req.params.id;
     const { page = 1, limit = 10 } = req.query;
-    const result = await PostService.getPostsByUser(userId, page, limit);
+    const current_user_id = req.user ? req.user.user_id : null;
+    const result = await PostService.getPostsByUser(
+      userId,
+      page,
+      limit,
+      current_user_id
+    );
     new OK({
       message: 'User posts fetched successfully',
       metadata: result,
@@ -52,7 +59,8 @@ class PostController {
   // Get a single post by ID
   static getPostById = async (req, res) => {
     const postId = req.params.id;
-    const result = await PostService.getPostById(postId);
+    const current_user_id = req.user ? req.user.user_id : null;
+    const result = await PostService.getPostById(postId, current_user_id);
     new OK({
       message: 'Post fetched successfully',
       metadata: result,

@@ -115,7 +115,7 @@ class PostService {
     }
   };
 
-  static getAllPosts = async (page = 1, limit = 10) => {
+  static getAllPosts = async (page = 1, limit = 10, current_user_id = null) => {
     const offset = (page - 1) * limit;
     const { count, rows } = await db.Post.findAndCountAll({
       include: [{ model: db.User, attributes: ['user_id', 'username'] }],
@@ -124,10 +124,44 @@ class PostService {
       order: [['createdAt', 'DESC']],
     });
 
-    return { total: count, page, limit, posts: rows };
+    const posts = rows.map((post) => post.toJSON());
+
+    if (current_user_id) {
+      const postIds = posts.map((post) => post.post_id);
+      const votes = await db.PostVote.findAll({
+        where: {
+          post_id: postIds,
+          user_id: current_user_id,
+        },
+        raw: true,
+      });
+
+      const votesMap = votes.reduce((acc, vote) => {
+        acc[vote.post_id] = vote.value;
+        return acc;
+      }, {});
+
+      posts.forEach((post) => {
+        const voteValue = votesMap[post.post_id];
+        post.isUpvoted = voteValue === 1;
+        post.isDownvoted = voteValue === -1;
+      });
+    } else {
+      posts.forEach((post) => {
+        post.isUpvoted = false;
+        post.isDownvoted = false;
+      });
+    }
+
+    return { total: count, page, limit, posts };
   };
 
-  static getPostsByUser = async (user_id, page = 1, limit = 10) => {
+  static getPostsByUser = async (
+    user_id,
+    page = 1,
+    limit = 10,
+    current_user_id = null
+  ) => {
     const offset = (page - 1) * limit;
     const { count, rows } = await db.Post.findAndCountAll({
       where: { user_id },
@@ -136,15 +170,61 @@ class PostService {
       order: [['createdAt', 'DESC']],
     });
 
-    return { total: count, page, limit, posts: rows };
+    const posts = rows.map((post) => post.toJSON());
+
+    if (current_user_id) {
+      const postIds = posts.map((post) => post.post_id);
+      const votes = await db.PostVote.findAll({
+        where: {
+          post_id: postIds,
+          user_id: current_user_id,
+        },
+        raw: true,
+      });
+
+      const votesMap = votes.reduce((acc, vote) => {
+        acc[vote.post_id] = vote.value;
+        return acc;
+      }, {});
+
+      posts.forEach((post) => {
+        const voteValue = votesMap[post.post_id];
+        post.isUpvoted = voteValue === 1;
+        post.isDownvoted = voteValue === -1;
+      });
+    } else {
+      posts.forEach((post) => {
+        post.isUpvoted = false;
+        post.isDownvoted = false;
+      });
+    }
+
+    return { total: count, page, limit, posts };
   };
 
-  static getPostById = async (post_id) => {
+  static getPostById = async (post_id, current_user_id = null) => {
     const post = await db.Post.findByPk(post_id, {
       include: [{ model: db.User, attributes: ['user_id', 'username'] }],
     });
     if (!post) throw new NotFoundError('Post not found');
-    return post;
+
+    const postJSON = post.toJSON();
+
+    if (current_user_id) {
+      const vote = await db.PostVote.findOne({
+        where: {
+          post_id,
+          user_id: current_user_id,
+        },
+      });
+      postJSON.isUpvoted = vote ? vote.value === 1 : false;
+      postJSON.isDownvoted = vote ? vote.value === -1 : false;
+    } else {
+      postJSON.isUpvoted = false;
+      postJSON.isDownvoted = false;
+    }
+
+    return postJSON;
   };
 
   /**
