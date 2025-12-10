@@ -43,6 +43,27 @@ class CardDetectionController {
       next(error);
     }
   };
+
+  detectCardsWithDataTest = async (req, res, next) => {
+    try {
+      const file = req.file;
+      if (!file) throw new Error('No file uploaded');
+
+      const { domain = 'ygo' } = req.body;
+      const result = await ModelService.detectCardsWithDataTest(
+        file.buffer,
+        domain,
+        file.originalname
+      );
+
+      new OK({
+        message: 'Card names detected successfully',
+        metadata: result,
+      }).send(res);
+    } catch (error) {
+      next(error);
+    }
+  };
 }
 
 module.exports = new CardDetectionController();

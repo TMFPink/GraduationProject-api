@@ -74,6 +74,29 @@ class CardDetectionService {
       total_found: cardsData.cards.length,
     };
   };
+
+  static detectCardsWithDataTest = async (
+    fileBuffer,
+    domain = 'ygo',
+    originalName = 'image.jpg'
+  ) => {
+    if (!fileBuffer) throw new BadRequestError('Image file is required');
+
+    const fakeCardName = [
+      'Surfacing Big Jaws',
+      'Dark Magician Girl',
+      'Gagaga Girl',
+    ];
+
+    // Query cards by detected names
+    const cardsData = await CardService.get_by_names(fakeCardName, domain);
+
+    return {
+      cards: cardsData.cards,
+      total_detected: 3,
+      total_found: 3,
+    };
+  };
 }
 
 module.exports = CardDetectionService;

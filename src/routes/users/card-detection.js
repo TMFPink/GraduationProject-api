@@ -16,6 +16,12 @@ router.post(
 );
 
 router.post(
+  '/test',
+  upload.single('file'),
+  asyncHandler(CardDetectionController.detectCardsWithDataTest)
+);
+
+router.post(
   '/names',
   upload.single('file'),
   asyncHandler(CardDetectionController.detectNames)
