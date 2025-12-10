@@ -162,9 +162,14 @@ class CardService {
       return { cards: [] };
     }
 
+    // const where = {
+    //   name: {
+    //     [Op.or]: names.map((name) => ({ [Op.iLike]: `%${name.trim()}%` })),
+    //   },
+    // };
     const where = {
       name: {
-        [Op.or]: names.map((name) => ({ [Op.iLike]: `%${name.trim()}%` })),
+        [Op.in]: names,
       },
     };
 

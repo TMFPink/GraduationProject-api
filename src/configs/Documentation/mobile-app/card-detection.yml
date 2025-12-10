@@ -71,6 +71,39 @@ paths:
           description: Invalid input or failed detection
         '500':
           description: Internal server error
+  /card-detection/test:
+    post:
+      tags: [Model]
+      summary: Detect card names and return full card data
+      description: Upload an image, detect card names, and return complete card information including images and metadata.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Image file to analyze
+                domain:
+                  type: string
+                  enum: [ygo, pkm]
+                  default: ygo
+                  description: Card domain (Yu-Gi-Oh or Pokemon)
+      responses:
+        '200':
+          description: Cards detected and data retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DetectWithDataResponse'
+        '400':
+          description: Invalid input or failed detection
+        '500':
+          description: Internal server error
 
 components:
   schemas:
